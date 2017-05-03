@@ -1,4 +1,4 @@
-krb5lib — Kerberos5 messages and ASN.1 syntaxes as O'Caml records and types.
+krb5lib — Kerberos5 msgs and syntaxes as records and types.
 -------------------------------------------------------------------------------
 %%VERSION%%
 
@@ -10,7 +10,7 @@ Homepage: https://github.com/awuersch/krb5lib
 
 ## Installation
 
-krb5lib can be installed with `opam`:
+krb5lib cannot yet be installed with `opam`:
 
     opam install krb5lib
 
@@ -19,8 +19,8 @@ instructions.
 
 ## Documentation
 
-The documentation and API reference is generated from the source
-interfaces. It can be consulted [online][doc] or via `odig doc
+The documentation and API reference will be generated from source
+interfaces. It will be able to be consulted [online][doc] or via `odig doc
 krb5lib`.
 
 [doc]: https://tony.wuersch.name/krb5lib/doc
