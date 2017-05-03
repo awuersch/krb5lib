@@ -1,0 +1,27 @@
+let all =
+[ (module Address_type : Asn1_intf.S)
+; (module As_req : Asn1_intf.S)
+; (module Authorization_data : Asn1_intf.S)
+; (module Encrypted_data : Asn1_intf.S)
+; (module Encryption_key : Asn1_intf.S)
+; (module Enc_ticket_part : Asn1_intf.S)
+; (module Host_addresses : Asn1_intf.S)
+; (module Host_address : Asn1_intf.S)
+; (module Kdc_options : Asn1_intf.S)
+; (module Kdc_req_body : Asn1_intf.S)
+; (module Kdc_req : Asn1_intf.S)
+; (module Kerberos_time : Asn1_intf.S)
+; (module Kerberos_string : Asn1_intf.S)
+; (module Krb_int32 : Asn1_intf.S)
+; (module Name_type : Asn1_intf.S)
+; (module Octet_string : Asn1_intf.S)
+; (module Pa_data : Asn1_intf.S)
+; (module Principal_name : Asn1_intf.S)
+; (module Realm : Asn1_intf.S)
+; (module Ticket_flags : Asn1_intf.S)
+; (module Ticket : Asn1_intf.S)
+; (module Transited_encoding : Asn1_intf.S)
+; (module Uint32 : Asn1_intf.S)
+]
+
+let one = [ (module Kerberos_string : Asn1_intf.S) ]

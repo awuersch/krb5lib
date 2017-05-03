@@ -1,0 +1,7 @@
+description = "Kerberos5 messages and ASN.1 syntaxes as O'Caml records and types."
+version = "%%VERSION_NUM%%"
+requires = ""
+archive(byte) = "krb5lib.cma"
+archive(native) = "krb5lib.cmxa"
+plugin(byte) = "krb5lib.cma"
+plugin(native) = "krb5lib.cmxs"
