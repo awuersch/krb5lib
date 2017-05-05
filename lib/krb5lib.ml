@@ -9,18 +9,6 @@ module Msg = struct
 
   module Interfaces = Interfaces
 
-  module type FLAG_TYPE = sig
-    type t
-  
-    module Intable : Interfaces.Intable with type t = t
-    module OrderedType : Set.OrderedType with type t = t
-  
-    module Encoding_options : sig
-      (* Minimum number of bits to use when serializing a flag set *)
-      val min_bits : int
-    end
-  end
-
   module Asn1_intf = Asn1_intf
 
   module Krb_int32 = Krb_int32

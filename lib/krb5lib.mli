@@ -28,19 +28,9 @@ module Msg : sig
     end
   end
 
-  module type FLAG_TYPE =
-    sig
-      type t
-      module Intable :
-        sig type nonrec t = t val t_of_int : int -> t val int_of_t : t -> int end
-      module OrderedType : sig type nonrec t = t val compare : t -> t -> int end
-      module Encoding_options : sig val min_bits : int end
-    end
-
   module Interfaces : sig
     module type Intable = sig
       type t
-
       val t_of_int : int -> t
       val int_of_t : t -> int
     end
@@ -52,7 +42,6 @@ module Msg : sig
 
     module type ALIST = sig
       type t
-
       val alist : (t * int) list
     end
 
@@ -67,18 +56,6 @@ module Msg : sig
   module Krb_int32 : sig
     include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
 
-    module type ALIST_TYPE = sig
-      module M : (Interfaces.ALIST)
-      include Asn1_intf.S with type t = M.t and type Ast.t = Z.t
-
-      module Intable : sig
-        type t = M.t
-
-        val t_of_int : int -> t
-        val int_of_t : t -> int
-      end
-    end
-
     module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
   end
 
@@ -86,22 +63,8 @@ module Msg : sig
   module Uint32 : sig
     include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
 
-    module type ALIST_TYPE = sig
-      module M : (Interfaces.ALIST)
-      include Asn1_intf.S with type t = M.t and type Ast.t = Z.t
-
-      module Intable : sig
-        type t = M.t
-
-        val t_of_int : int -> t
-        val int_of_t : t -> int
-      end
-    end
-
     module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
   end
-
-  (* module Uint32 = Krb_int32 *)
 
   module Octet_string :
     Asn1_intf.S with type t = string and type Ast.t = Cstruct.t
@@ -109,10 +72,9 @@ module Msg : sig
   module Kerberos_string :
     Asn1_intf.S with type t = string and type Ast.t = string
 
+  (* testing --- Realm = Kerberos_string does not seem to work ... *)
   module Realm :
     Asn1_intf.S with type t = string and type Ast.t = string
-
-  (* module Realm = Kerberos_string *)
 
   module Kerberos_time : sig
     type t =
@@ -174,7 +136,6 @@ module Msg : sig
       val alist : (t * int) list
     end
 
-    (* include Krb_int32.ALIST_TYPE with module M = Alist *)
     include Asn1_intf.S with
           type t = M.t
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
@@ -215,11 +176,9 @@ module Msg : sig
 
     module M : sig
       type t = ty
-
       val alist : (t * int) list
     end
 
-    (* include Krb_int32.ALIST_TYPE with module M = Alist *)
     include Asn1_intf.S with
           type t = M.t
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
@@ -241,7 +200,6 @@ module Msg : sig
       val alist : (t * int) list
     end
 
-    (* include Krb_int32.ALIST_TYPE with module M = Alist *)
     include Asn1_intf.S with
           type t = M.t
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
@@ -504,7 +462,7 @@ module Msg : sig
 
   module Types : sig
     val all  : (string * (module Asn1_intf.S)) list
-    val some  : (string * (module Asn1_intf.S)) list
+    val some : (string * (module Asn1_intf.S)) list
     val bad  : (string * (module Asn1_intf.S)) list
   end
 end
