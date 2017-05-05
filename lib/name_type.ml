@@ -1,19 +1,17 @@
 open Sexplib.Std
 
-type ty =
-| Unknown
-| Principal
-| Srv_inst
-| Srv_hst
-| Srv_xhst
-| Uid
-| X500_principal
-| Smtp_name
-| Enterprise
-[@@deriving sexp]
-
-module Alist = struct
-  type nonrec t = ty
+module M = struct
+  type t =
+  | Unknown
+  | Principal
+  | Srv_inst
+  | Srv_hst
+  | Srv_xhst
+  | Uid
+  | X500_principal
+  | Smtp_name
+  | Enterprise
+  [@@deriving sexp]
 
   let alist =
     [ Unknown, 0
@@ -28,6 +26,5 @@ module Alist = struct
     ]
 end
 
-module Asn1 = Krb_int32.Of_alist (Alist)
-
+module Asn1 = Krb_int32.Of_alist (M)
 include Asn1

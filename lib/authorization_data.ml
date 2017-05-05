@@ -26,10 +26,10 @@ module Datum = struct
     }
 end
 
-type t = Datum.t list
+type t = Datum.t list [@@deriving sexp]
 
 module Ast = struct
-  type t = Datum.Ast.t list [@@deriving sexp]
+  type t = Datum.Ast.t list
 
   let asn = sequence_of Datum.Ast.asn
 end

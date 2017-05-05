@@ -68,7 +68,10 @@ let t_of_int_exn int =
   | 28 -> `Enc_krb_priv_part
   | 29 -> `Enc_krb_cred_part
   | 30 -> `Krb_error
+  | _  -> `Krb_error
+(*
   | _ -> failwith (Printf.sprintf "Invalid application tag number %d" int)
+ *)
 
 let tag t asn = Asn.S.explicit ~cls:`Application (int_of_t t) asn
 

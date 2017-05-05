@@ -27,7 +27,7 @@ des-cbc-crc                        1             6.2.3
    with RFC 3961 *)
 open Sexplib.Std
 
-  type ty =
+type ty =
   | Des_cbc_crc
   | Des_cbc_md4
   | Des_cbc_md5
@@ -50,9 +50,8 @@ open Sexplib.Std
   | Subkey_keymaterial
   [@@deriving sexp]
 
-
-module Alist = struct
-  type nonrec t = ty
+module M = struct
+  type t = ty
 
   let alist =
     [ Des_cbc_crc                       , 1
@@ -77,6 +76,9 @@ module Alist = struct
     ; Subkey_keymaterial                , 65
     ]
 end
+
+module Asn1 = Krb_int32.Of_alist(M)
+include Asn1
 
 (* I bet this list will grow longer one day. *)
 let is_weak t =
@@ -114,6 +116,3 @@ let is_newer_than_rfc_4120 t =
   | Aes128_cts_hmac_sha1_96
   | Aes256_cts_hmac_sha1_96
   | Subkey_keymaterial -> true
-
-module Asn1 = Krb_int32.Of_alist(Alist)
-include Asn1

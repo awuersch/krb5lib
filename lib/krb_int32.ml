@@ -12,6 +12,18 @@ let ast_of_t = Z.of_int32
 
 let t_of_ast = Z.to_int32
 
+module type ALIST_TYPE = sig
+  module M : (Interfaces.ALIST)
+  include Asn1_intf.S with type t = M.t and type Ast.t = Z.t
+
+  module Intable : sig
+    type t = M.t
+
+    val t_of_int : int -> t
+    val int_of_t : t -> int
+  end
+end
+
 module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t = struct
   include M
 
@@ -22,4 +34,8 @@ module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t = struct
   let ast_of_t t = Z.of_int (Intable.int_of_t t)
 
   let t_of_ast ast = Intable.t_of_int (Z.to_int ast)
+
+  let sexp_of_t t = sexp_of_int (Intable.int_of_t t)
+
+  let t_of_sexp sexp = Intable.t_of_int (int_of_sexp sexp)
 end

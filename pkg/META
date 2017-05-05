@@ -1,6 +1,6 @@
 description = "Kerberos5 messages and ASN.1 syntaxes as O'Caml records and types."
 version = "%%VERSION_NUM%%"
-requires = ""
+requires = "cstruct sexplib ptime nocrypto asn1-combinators"
 archive(byte) = "krb5lib.cma"
 archive(native) = "krb5lib.cmxa"
 plugin(byte) = "krb5lib.cma"

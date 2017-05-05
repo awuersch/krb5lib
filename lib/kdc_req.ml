@@ -37,19 +37,18 @@ let ast_of_t t =
   )
 
 let t_of_ast : Ast.t -> t = function
-  | (a, b, c, d) -> 
-      if a == 5 then
-        let msg_type =
-          if b = Application_tag.int_of_t `As_req then
-            `As_req
-          else
-          if b = Application_tag.int_of_t `Tgs_req then
-            `Tgs_req
-          else failwith (Printf.sprintf "wrong application tag number %d" b) in
-        let padata = match c with
-          | None -> []
-          | Some l -> List.map Pa_data.t_of_ast l in
-        let req_body = Kdc_req_body.t_of_ast d in
-          { msg_type; padata; req_body }
+  | (_, b, c, d) -> 
+    let msg_type =
+      if b = Application_tag.int_of_t `As_req then
+        `As_req
       else
-        failwith "kdc_req kvno not 5"
+      if b = Application_tag.int_of_t `Tgs_req then
+        `Tgs_req
+      else
+        (* failwith (Printf.sprintf "wrong application tag number %d" b) *)
+        `Tgs_req in
+    let padata = match c with
+      | None -> []
+      | Some l -> List.map Pa_data.t_of_ast l in
+    let req_body = Kdc_req_body.t_of_ast d in
+      { msg_type; padata; req_body }

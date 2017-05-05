@@ -1,6 +1,6 @@
 open Sexplib.Std
 
-module Flags : Interfaces.ALIST = struct
+module Flags = struct
   type t =
   | Reserved
   | Forwardable
@@ -34,12 +34,10 @@ module Flags : Interfaces.ALIST = struct
     ; Transited_policy_checked, 12
     ; Ok_as_delegate, 13
     ]
+
+  module Encoding_options = struct
+    let min_bits = 32
+  end
 end
 
-include Krb_combinators.Make_flags_alist
-  (struct
-    include Flags
-    module Encoding_options = struct
-      let min_bits = 32
-    end
-   end)
+include Krb_combinators.Make_flags_alist(Flags)

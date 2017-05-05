@@ -1,19 +1,17 @@
 open Sexplib.Std
 
-type ty =
-| Ipv4
-| Directional
-| Chaos_net
-| Xns
-| Iso
-| Decnet_phase_iv
-| Apple_talk_ddp
-| Net_bios
-| Ipv6
-[@@deriving sexp]
-
-module Alist = struct
-  type nonrec t = ty
+module M = struct
+  type t =
+  | Ipv4
+  | Directional
+  | Chaos_net
+  | Xns
+  | Iso
+  | Decnet_phase_iv
+  | Apple_talk_ddp
+  | Net_bios
+  | Ipv6
+  [@@deriving sexp]
 
   let alist =
     [ Ipv4, 2
@@ -28,5 +26,5 @@ module Alist = struct
     ]
 end
 
-module Asn1 = Krb_int32.Of_alist (Alist)
+module Asn1 = Krb_int32.Of_alist (M)
 include Asn1

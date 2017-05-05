@@ -17,13 +17,21 @@ module type ALIST = sig
 end
 
 (* Slower than a custom Intable implementation *)
+(* We randomly select an entry if search fails - for random tests *)
 module Intable_of_alist (M : ALIST) : Intable with type t = M.t = struct
   type t = M.t
 
   let t_of_int n =
-    fst (List.find (fun (_, n') -> n = n') M.alist)
+    let l = M.alist in
+    let p = try List.find (fun (_, n') -> n = n') l with
+      Not_found -> List.length l |> Random.int |> List.nth l
+    in
+      fst p
 
   let int_of_t t =
-    snd (List.find (fun (t', _) -> t = t') M.alist)
-
+    let l = M.alist in
+    let p = try List.find (fun (t', _) -> t = t') l with
+      Not_found -> List.length l |> Random.int |> List.nth l
+    in
+      snd p
 end

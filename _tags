@@ -1,4 +1,4 @@
-true : bin_annot, safe_string, package(bytes)
+true : bin_annot, safe_string, package(bytes,sexplib,ppx_sexp_conv,asn1-combinators,zarith)
 
 <lib> : include
 <test> : include

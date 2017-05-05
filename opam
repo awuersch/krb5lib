@@ -12,7 +12,10 @@ depends:
 [
   "ocamlfind" {build}
   "ocamlbuild" {build}
+  "ppx_sexp_conv" {build}
   "topkg" {build & >= "0.9.0"}
+  "sexplib"
+  "asn1-combinators" {>= "0.1.1"}
 ]
 depopts: []
 build:
