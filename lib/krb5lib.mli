@@ -1,51 +1,70 @@
 (*---------------------------------------------------------------------------
    Copyright (c) 2017 Tony Wuersch. All rights reserved.
    Copyright (c) 2015 Brandon Bohrer. All rights reserved.
-   Distributed under the ISC license, see terms at the end of the file.
-   %%NAME%% %%VERSION%%
-  ---------------------------------------------------------------------------*)
+   See LICENSE.md *)
 
 (** Kerberos5 messages and ASN.1 syntaxes as O'Caml records and types.
 
+    Embeds
+    {b References}
+    {ul
+    {  {{:https;//tools.ietf.org/html/rfc4120#appendixA}The
+         Kerberos Authentication Service (V5)}, Appendex A. ASN.1 module}
+    {  {{:https;//tools.ietf.org/html/rfc4120}The
+         Kerberos Authentication Service (V5)}}
+    {}
+    
     {e %%VERSION%% — {{:%%PKG_HOMEPAGE%% }homepage}} *)
 
-(** {1 Krb5lib} *)
+(** {1 Krb5lib} Krb5 message types *)
 module Msg : sig
 
   module Asn1_intf : sig
+    (** Each ASN.1 type matches or extends this *)
     module type S = sig
       type t
   
+      (** Abstract syntax tree, typed per asn1-combinators package *)
       module Ast : sig
         type t
         val asn : t Asn.t
       end
   
+      (* marshalling *)
       val ast_of_t : t -> Ast.t
+
+      (* de-marshalling *)
       val t_of_ast : Ast.t -> t
+
+      (* serializing *)
       val sexp_of_t : t -> Sexplib.Sexp.t
+
+      (* de-serializing *)
       val t_of_sexp : Sexplib.Sexp.t -> t
     end
   end
 
   module Interfaces : sig
+    (** variant type -> int map *)
+    module type ALIST = sig
+      type t
+      val alist : (t * int) list
+    end
+
+    (** encoding and decoding *)
     module type Intable = sig
       type t
       val t_of_int : int -> t
       val int_of_t : t -> int
     end
 
+    (** variant types compare via ints *)
     module OrderedType_of_Intable (M : Intable) : sig
       type t = M.t
       val compare : t -> t -> int
     end
 
-    module type ALIST = sig
-      type t
-      val alist : (t * int) list
-    end
-
-    (* Slower than a custom Intable implementation *)
+    (** Slower than a custom Intable implementation *)
     module Intable_of_alist (M : ALIST) : sig
       type t = M.t
       val t_of_int : int -> t
@@ -53,29 +72,37 @@ module Msg : sig
     end
   end
 
-  module Krb_int32 : sig
-    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
-
-    module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
-  end
-
-  (* testing -- Uint32 = Krb_int32 does not seem to work ... *)
-  module Uint32 : sig
-    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
-
-    module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
-  end
-
-  module Octet_string :
-    Asn1_intf.S with type t = string and type Ast.t = Cstruct.t
-
+  (** KerberosString type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.1}rfc4120 Section 5.2.1. KerberosString} *)
   module Kerberos_string :
     Asn1_intf.S with type t = string and type Ast.t = string
 
-  (* testing --- Realm = Kerberos_string does not seem to work ... *)
+  (** Int32 type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.4}rfc4120 Section 5.2.4. Constrained Integer Types} *)
+  module Krb_int32 : sig
+    (** to monomorphic type *)
+    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
+
+    (** maps variant types to ASN.1 types, given a mapping to int *)
+    module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
+  end
+
+  (** UInt32 type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.4}rfc4120 Section 5.2.4. Constrained Integer Types} *)
+  module Uint32 : sig
+    (** to monomorphic type *)
+    include Asn1_intf.S with type t = int64 and type Ast.t = Z.t
+
+    (** maps variant types to ASN.1 types, given a mapping to int *)
+    module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
+  end
+
+  (** Realm type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.2}rfc4120 Section 5.2.2. Realm and PrincipalName} *)
   module Realm :
     Asn1_intf.S with type t = string and type Ast.t = string
 
+  (** ASN.1 Octet_string type *)
+  module Octet_string :
+    Asn1_intf.S with type t = string and type Ast.t = Cstruct.t
+
+  (** Realm type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.3}rfc4120 Section 5.2.3. KerberosTime} *)
   module Kerberos_time : sig
     type t =
     { year : int
@@ -88,6 +115,7 @@ module Msg : sig
     include Asn1_intf.S with type t := t and type Ast.t = Ptime.t
   end
 
+  (** Application tag numbers, see {{:https://tools.ietf.org/html/rfc4120#section-5.10}rfc4120 Section 5.10. Application Tag Numbers} *)
   module Application_tag : sig
     type t =
     [ `Ticket
@@ -120,6 +148,7 @@ module Msg : sig
     val t_of_sexp : Sexplib.Sexp.t -> t
   end
 
+  (** Principal Name type, see {{:https://tools.ietf.org/html/rfc4120#section-6.2}rfc4120 Section 6.2. Principal Names} *)
   module Name_type : sig
     module M : sig
       type t =
@@ -141,27 +170,33 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
+  (** Encryption type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1} Kerberos Encryption Type Numbers, Last updated 2017-03-02} *)
   module Encryption_type : sig
     type ty =
+    | Reserved_0
     | Des_cbc_crc
     | Des_cbc_md4
     | Des_cbc_md5
-    | Reserved4
+    | Reserved_1
     | Des3_cbc_md5
-    | Reserved6
+    | Reserved_2
     | Des3_cbc_sha1
-    | Dsa_with_sha1_cms_oid
-    | Md5WithRSAEncryption_cmsOID
-    | Sha1WithRSAEncryption_cmsOID
+    | DsaWithSHA1_CmsOID
+    | Md5WithRSAEncryption_CmsOID
+    | Sha1WithRSAEncryption_CmsOID
     | Rc2CBC_EnvOID
-    | Rsa_encryption_envOID
-    | Rsa_es_oaepSenvOID
-    | Des_ede3_cbc_envOID
+    | RsaEncryption_EnvOID
+    | RsaES_OAEP_ENV_OID
+    | Des_ede3_cbc_Env_OID
     | Des3_cbc_sha1_kd
     | Aes128_cts_hmac_sha1_96
     | Aes256_cts_hmac_sha1_96
+    | Aes128_cts_hmac_sha256_128
+    | Aes256_cts_hmac_sha384_192
     | Rc4_hmac
     | Rc4_hmac_exp
+    | Camellia128_cts_cmac
+    | Camellia256_cts_cmac
     | Subkey_keymaterial
 
     (* I bet this list will grow longer one day. *)
@@ -184,6 +219,41 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
+  (** Checksum type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1} Kerberos Encryption Type Numbers, Last updated 2017-03-02} *)
+  module Checksum_type : sig
+    module M : sig
+      type t =
+      | Reserved_0
+      | CRC32
+      | Rsa_md4
+      | Rsa_md4_des
+      | Des_mac
+      | Des_mac_k
+      | Rsa_md4_des_k
+      | Rsa_md5
+      | Rsa_md5_des
+      | Rsa_md5_des3
+      | Sha1_unkeyed_0
+      | Hmac_sha1_des3_kd
+      | Hmac_sha1_des3
+      | Sha1_unkeyed_1
+      | Hmac_sha1_96_aes128
+      | Hmac_sha1_96_aes256
+      | Cmac_camellia128
+      | Cmac_camellia256
+      | Hmac_sha256_128_aes128
+      | Hmac_sha256_192_aes256
+      | Reserved_1
+
+      val alist : (t * int) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+  end
+
+  (** Address type, see {{:https://tools.ietf.org/html/rfc4120#section-7.5.3}rfc4120 Section 7.5.3 Principal Names} *)
   module Address_type : sig
     module M : sig
       type t =
@@ -196,6 +266,53 @@ module Msg : sig
       | Apple_talk_ddp
       | Net_bios
       | Ipv6
+
+      val alist : (t * int) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+  end
+
+  (** Tcp extension, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-3} Kerberos Encryption Type Numbers, Last updated 2017-03-02} *)
+  module Tcp_extension : sig
+    module M : sig
+      type t =
+      | Krb5_over_TLS
+      | Reserved_0
+
+      val alist : (t * int) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+  end
+
+  (** FAST Armor type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-5} FAST Armor Types, Last updated 2017-03-02} *)
+  module Fast_armor_type : sig
+    module M : sig
+      type t =
+      | Reserved_0
+      | FX_FAST_ARMOR_AP_REQUEST
+
+      val alist : (t * int) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+  end
+
+  (** Transport type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-9} Kerberos Message Transport Types, Last updated 2017-03-02} *)
+  module Transport_type : sig
+    module M : sig
+      type t =
+      | Reserved_0
+      | UDP
+      | TCP
+      | TLS
 
       val alist : (t * int) list
     end
@@ -273,6 +390,27 @@ module Msg : sig
      and type Ast.t = bool array
   end
 
+  (** FAST options, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-6} FAST Options, Last updated 2017-03-02} *)
+  module Fast_options : sig
+    module Flags : sig
+      type t =
+      | Reserved_0
+      | Hide_client_names
+      | Kdc_follow_referrals
+
+      val alist : (t * int) list
+      module Encoding_options : sig
+        val min_bits : int
+      end
+    end
+
+    module FlagSet : Set.S
+
+    include Asn1_intf.S with
+         type t = FlagSet.t
+     and type Ast.t = bool array
+  end
+
   module Principal_name : sig
     type t =
       { name_type : Name_type.t
@@ -281,6 +419,16 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Name_type.Ast.t * Kerberos_string.Ast.t list
+  end
+
+  module Checksum : sig
+    type t =
+      { cksumtype : Checksum_type.t
+      ; checksum : Octet_string.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Checksum_type.Ast.t * Octet_string.Ast.t
   end
 
   module Encrypted_data : sig
@@ -314,6 +462,7 @@ module Msg : sig
       and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t
   end
 
+  (** Host address, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.5}rfc4120 Section 5.2.5 Host Address and Host Addresses} *)
   module Host_address : sig
     type t =
       { addr_type : Address_type.t
@@ -324,6 +473,7 @@ module Msg : sig
       and type Ast.t = Address_type.Ast.t * Cstruct.t
   end
 
+  (** Host addresses, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.5}rfc4120 Section 5.2.5 Host Address and Host Addresses} *)
   module Host_addresses : sig
     type t = Host_address.t list
     include Asn1_intf.S with
@@ -331,6 +481,86 @@ module Msg : sig
       and type Ast.t = Host_address.Ast.t list
   end
 
+  (** Pre-authentication data types, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-4} Kerberos Pre-authentication and Typed Data, Last updated 2017-03-02} *)
+  module Pa_data_type : sig
+    module M : sig
+      type t =
+      | PA_TGS_REQ
+      | PA_ENC_TIMESTAMP
+      | PA_PW_SALT
+      | Reserved_0
+      | PA_ENC_UNIX_TIME
+      | PA_SANDIA_SECUREID
+      | PA_SESAME
+      | PA_OSF_DCE
+      | PA_CYBERSAFE_SECUREID
+      | PA_AFS3_SALT
+      | PA_ETYPE_INFO
+      | PA_SAM_CHALLENGE
+      | PA_SAM_RESPONSE
+      | PA_PK_AS_REQ_OLD
+      | PA_PK_AS_REP_OLD
+      | PA_PK_AS_REQ
+      | PA_PK_AS_REP
+      | PA_PK_OCSP_RESPONSE
+      | PA_ETYPE_INFO2
+      | PA_USE_SPECIFIED_KVNO
+      | PA_SVR_REFERRAL_INFO
+      | PA_SAM_REDIRECT
+      | PA_GET_FROM_TYPED_DATA
+      | TD_PADATA
+      | PA_SAM_ETYPE_INFO
+      | PA_ALT_PRINC
+      | PA_SERVER_REFERRAL
+      | PA_SAM_CHALLENGE2
+      | PA_SAM_RESPONSE2
+      | PA_EXTRA_TGT
+      | TD_PKINIT_CMS_CERTIFICATES
+      | TD_KRB_PRINCIPAL
+      | TD_KRB_REALM
+      | TD_TRUSTED_CERTIFIERS
+      | TD_CERTIFICATE_INDEX
+      | TD_APP_DEFINED_ERROR
+      | TD_REQ_NONCE
+      | TD_REQ_SEQ
+      | TD_DH_PARAMETERS
+      | TD_CMS_DIGEST_ALGORITHMS
+      | TD_CERT_DIGEST_ALGORITHMS
+      | PA_PAC_REQUEST
+      | PA_FOR_USER
+      | PA_FOR_X509_USER
+      | PA_FOR_CHECK_DUPS
+      | PA_AS_CHECKSUM
+      | PA_FX_COOKIE
+      | PA_AUTHENTICATION_SET
+      | PA_AUTH_SET_SELECTED
+      | PA_FX_FAST
+      | PA_FX_ERROR
+      | PA_ENCRYPTED_CHALLENGE
+      | PA_OTP_CHALLENGE
+      | PA_OTP_REQUEST
+      | PA_OTP_CONFIRM
+      | PA_OTP_PIN_CHANGE
+      | PA_EPAK_AS_REQ
+      | PA_EPAK_AS_REP
+      | PA_PKINIT_KX
+      | PA_PKU2U_NAME
+      | PA_REQ_ENC_PA_REP
+      | PA_AS_FRESHNESS
+      | PA_SUPPORTED_ETYPES
+      | PA_EXTENDED_ERROR
+
+      val alist : (t * int) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+  end
+
+  (** Pre-authorization data, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.7}rfc4120 Section 5.2.7 PA-DATA
+   * the specific structure of padata_value depends on the padata_type.
+   *)
   module Pa_data : sig
     type t =
       { padata_type : Krb_int32.t
@@ -341,6 +571,9 @@ module Msg : sig
       and type Ast.t = Krb_int32.Ast.t * Cstruct.t
   end
 
+  (** Authorization data, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.6}rfc4120 Section 5.2.6 AuthorizationData}
+   * the specific structure of ad_data depends on the ad_type.
+   *)
   module Authorization_data : sig
     module Datum : sig
       type t =
@@ -435,21 +668,6 @@ module Msg : sig
             *  Ticket.Ast.t list option))))))))))
   end
 
-  module Kdc_req : sig
-    type t =
-      { msg_type : [ `As_req | `Tgs_req ]
-      ; padata : Pa_data.t list
-      ; req_body : Kdc_req_body.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-              int (* pvno - 5 *)
-            * int (* msg_type *)
-            * Pa_data.Ast.t list option (* Non-empty *)
-            * Kdc_req_body.Ast.t
-  end
-
   module As_req : sig
     type t =
       { padata : Pa_data.t list
@@ -457,7 +675,25 @@ module Msg : sig
       }
     include Asn1_intf.S with
           type t := t
-      and type Ast.t = Kdc_req.Ast.t
+      and type Ast.t =
+              int (* pvno = 5 *)
+            * int (* msg_type = Application_tag.int_of_t 'As_req *)
+            * Pa_data.Ast.t list option (* Non-empty *)
+            * Kdc_req_body.Ast.t
+  end
+
+  module Tgs_req : sig
+    type t =
+      { padata : Pa_data.t list
+      ; req_body : Kdc_req_body.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              int (* pvno = 5 *)
+            * int (* msg_type = Application_tag.int_of_t 'Tgs_req *)
+            * Pa_data.Ast.t list option (* Non-empty *)
+            * Kdc_req_body.Ast.t
   end
 
   module Types : sig

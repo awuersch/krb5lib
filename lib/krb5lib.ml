@@ -35,7 +35,15 @@ module Msg = struct
 
   module Encryption_type = Encryption_type
 
+  module Checksum_type = Checksum_type
+
+  module Checksum = Checksum
+
   module Enc_ticket_part = Enc_ticket_part
+
+  module Fast_armor_type = Fast_armor_type
+
+  module Fast_options = Fast_options
 
   module Host_addresses = Host_addresses
 
@@ -43,9 +51,11 @@ module Msg = struct
 
   module Kdc_req_body = Kdc_req_body
 
-  module Kdc_req = Kdc_req
+  module Kdc_options = Kdc_options
 
   module Name_type = Name_type
+
+  module Pa_data_type = Pa_data_type
 
   module Pa_data = Pa_data
 
@@ -53,13 +63,17 @@ module Msg = struct
 
   module Realm = Realm
 
-  module Ticket_flags = Ticket_flags
+  module Tcp_extension = Tcp_extension
 
-  module Kdc_options = Kdc_options
+  module Tgs_req = Tgs_req
+
+  module Ticket_flags = Ticket_flags
 
   module Ticket = Ticket
 
   module Transited_encoding = Transited_encoding
+
+  module Transport_type = Transport_type
 
   module Types = Types
 end

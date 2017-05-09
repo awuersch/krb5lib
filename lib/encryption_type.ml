@@ -1,79 +1,63 @@
-(*
-Feb 2005
-
-des-cbc-crc                        1             6.2.3
-      des-cbc-md4                        2             6.2.2
-      des-cbc-md5                        3             6.2.1
-      [reserved]                         4
-      des3-cbc-md5                       5
-      [reserved]                         6
-      des3-cbc-sha1                      7
-      dsaWithSHA1-CmsOID                 9           (pkinit)
-      md5WithRSAEncryption-CmsOID       10           (pkinit)
-      sha1WithRSAEncryption-CmsOID      11           (pkinit)
-      rc2CBC-EnvOID                     12           (pkinit)
-      rsaEncryption-EnvOID              13   (pkinit from PKCS#1 v1.5)
-      rsaES-OAEP-ENV-OID                14   (pkinit from PKCS#1 v2.0)
-      des-ede3-cbc-Env-OID              15           (pkinit)
-      des3-cbc-sha1-kd                  16              6.3
-      aes128-cts-hmac-sha1-96           17          [KRB5-AES]
-      aes256-cts-hmac-sha1-96           18          [KRB5-AES]
-      rc4-hmac                          23          (Microsoft)
-      rc4-hmac-exp                      24          (Microsoft)
-      subkey-keymaterial                65     (opaque; PacketCable)
-*)
-
-(* CR bbohrer: I have no idea what any of these are, I should double-check
-   with RFC 3961 *)
 open Sexplib.Std
 
+(** {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1} Kerberos Encryption Type Numbers, Last updated 2017-03-02} *)
 type ty =
-  | Des_cbc_crc
-  | Des_cbc_md4
-  | Des_cbc_md5
-  | Reserved4
-  | Des3_cbc_md5
-  | Reserved6
-  | Des3_cbc_sha1
-  | Dsa_with_sha1_cms_oid
-  | Md5WithRSAEncryption_cmsOID
-  | Sha1WithRSAEncryption_cmsOID
-  | Rc2CBC_EnvOID
-  | Rsa_encryption_envOID
-  | Rsa_es_oaepSenvOID
-  | Des_ede3_cbc_envOID
-  | Des3_cbc_sha1_kd
-  | Aes128_cts_hmac_sha1_96
-  | Aes256_cts_hmac_sha1_96
-  | Rc4_hmac
-  | Rc4_hmac_exp
-  | Subkey_keymaterial
+  | Reserved_0                   (* rfc6448 *)
+  | Des_cbc_crc                  (* rfc3961 *)
+  | Des_cbc_md4                  (* rfc3961 *)
+  | Des_cbc_md5                  (* rfc3961 *)
+  | Reserved_1                   (* rfc3961 *)
+  | Des3_cbc_md5                 (* ?? *)
+  | Reserved_2                   (* rfc3961 *)
+  | Des3_cbc_sha1                (* ?? *)
+  | DsaWithSHA1_CmsOID           (* rfc4556 *)
+  | Md5WithRSAEncryption_CmsOID  (* rfc4556 *)
+  | Sha1WithRSAEncryption_CmsOID (* rfc4556 *)
+  | Rc2CBC_EnvOID                (* rfc4556 *)
+  | RsaEncryption_EnvOID         (* rfc4556 [from PKCS #1 v1.5] *)
+  | RsaES_OAEP_ENV_OID           (* rfc4556 [from PKCS #1 v2.0] *)
+  | Des_ede3_cbc_Env_OID         (* rfc4556 *)
+  | Des3_cbc_sha1_kd             (* rfc3961 *)
+  | Aes128_cts_hmac_sha1_96      (* rfc3962 *)
+  | Aes256_cts_hmac_sha1_96      (* rfc3962 *)
+  | Aes128_cts_hmac_sha256_128   (* rfc8009 *)
+  | Aes256_cts_hmac_sha384_192   (* rfc8009 *)
+  | Rc4_hmac                     (* rfc4757 *)
+  | Rc4_hmac_exp                 (* rfc4757 *)
+  | Camellia128_cts_cmac         (* rfc6803 *)
+  | Camellia256_cts_cmac         (* rfc6803 *)
+  | Subkey_keymaterial           (* [(opaque; PacketCable)] *)
   [@@deriving sexp]
 
 module M = struct
   type t = ty
 
   let alist =
-    [ Des_cbc_crc                       , 1
-    ; Des_cbc_md4                       , 2
-    ; Des_cbc_md5                       , 3
-    ; Reserved4                         , 4
-    ; Des3_cbc_md5                      , 5
-    ; Reserved6                         , 6
-    ; Des3_cbc_sha1                     , 7
-    ; Dsa_with_sha1_cms_oid             , 9
-    ; Md5WithRSAEncryption_cmsOID       , 10
-    ; Sha1WithRSAEncryption_cmsOID      , 11
-    ; Rc2CBC_EnvOID                     , 12
-    ; Rsa_encryption_envOID             , 13
-    ; Rsa_es_oaepSenvOID                , 14
-    ; Des_ede3_cbc_envOID               , 15
-    ; Des3_cbc_sha1_kd                  , 16
-    ; Aes128_cts_hmac_sha1_96           , 17
-    ; Aes256_cts_hmac_sha1_96           , 18
-    ; Rc4_hmac                          , 23
-    ; Rc4_hmac_exp                      , 24
-    ; Subkey_keymaterial                , 65
+    [ Reserved_0                  , 0
+    ; Des_cbc_crc                 , 1
+    ; Des_cbc_md4                 , 2
+    ; Des_cbc_md5                 , 3
+    ; Reserved_1                  , 4
+    ; Des3_cbc_md5                , 5
+    ; Reserved_2                  , 6
+    ; Des3_cbc_sha1               , 7
+    ; DsaWithSHA1_CmsOID          , 9
+    ; Md5WithRSAEncryption_CmsOID , 10
+    ; Sha1WithRSAEncryption_CmsOID, 11
+    ; Rc2CBC_EnvOID               , 12
+    ; RsaEncryption_EnvOID        , 13
+    ; RsaES_OAEP_ENV_OID          , 14
+    ; Des_ede3_cbc_Env_OID        , 15
+    ; Des3_cbc_sha1_kd            , 16
+    ; Aes128_cts_hmac_sha1_96     , 17
+    ; Aes256_cts_hmac_sha1_96     , 18
+    ; Aes128_cts_hmac_sha256_128  , 19
+    ; Aes256_cts_hmac_sha384_192  , 20
+    ; Rc4_hmac                    , 23
+    ; Rc4_hmac_exp                , 24
+    ; Camellia128_cts_cmac        , 25
+    ; Camellia256_cts_cmac        , 26
+    ; Subkey_keymaterial          , 65
     ]
 end
 
@@ -89,30 +73,25 @@ let is_weak t =
   | Rc4_hmac_exp -> true
   | _ -> false
 
-(* CR bbohrer: This may not be 100% correct. I just followed the following rule from RFC 4120:
- RC4, DES, 3DES and anything in RFC 1510 are not "newer"
-*)
 (* Certain steps of the krb5 protocol are different depending on how old the encryption type is.
    Thus we expose a function to test whether an encryption type is considered new or old. *)
 let is_newer_than_rfc_4120 t =
   match t with
-  | Des_cbc_crc
-  | Des_cbc_md4
-  | Des_cbc_md5
+  | Reserved_0
   | Des3_cbc_md5
   | Des3_cbc_sha1
+  | DsaWithSHA1_CmsOID
+  | Md5WithRSAEncryption_CmsOID
+  | Sha1WithRSAEncryption_CmsOID
+  | Rc2CBC_EnvOID
+  | RsaEncryption_EnvOID
+  | RsaES_OAEP_ENV_OID
+  | Des_ede3_cbc_Env_OID
+  | Aes128_cts_hmac_sha256_128
+  | Aes256_cts_hmac_sha384_192
   | Rc4_hmac
   | Rc4_hmac_exp
-  | Des_ede3_cbc_envOID
-  | Des3_cbc_sha1_kd -> false
-  | Reserved4
-  | Reserved6
-  | Dsa_with_sha1_cms_oid
-  | Md5WithRSAEncryption_cmsOID
-  | Sha1WithRSAEncryption_cmsOID
-  | Rc2CBC_EnvOID
-  | Rsa_encryption_envOID
-  | Rsa_es_oaepSenvOID
-  | Aes128_cts_hmac_sha1_96
-  | Aes256_cts_hmac_sha1_96
+  | Camellia128_cts_cmac
+  | Camellia256_cts_cmac
   | Subkey_keymaterial -> true
+  | _ -> false
