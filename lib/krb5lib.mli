@@ -563,12 +563,12 @@ module Msg : sig
    *)
   module Pa_data : sig
     type t =
-      { padata_type : Krb_int32.t
+      { padata_type : Pa_data_type.t
       ; padata_value : Octet_string.t
       } [@@deriving sexp]
     include Asn1_intf.S with
           type t := t
-      and type Ast.t = Krb_int32.Ast.t * Cstruct.t
+      and type Ast.t = Pa_data_type.Ast.t * Cstruct.t
   end
 
   (** Authorization data, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.6}rfc4120 Section 5.2.6 AuthorizationData}
