@@ -23,7 +23,7 @@ module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t = struct
 
   let t_of_ast ast = Intable.t_of_int (Z.to_int ast)
 
-  let sexp_of_t t = sexp_of_int (Intable.int_of_t t)
+  let sexp_of_t t = sexp_of_string (Intable.string_of_t t)
 
-  let t_of_sexp sexp = Intable.t_of_int (int_of_sexp sexp)
+  let t_of_sexp sexp = Intable.t_of_string (string_of_sexp sexp)
 end

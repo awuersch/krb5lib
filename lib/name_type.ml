@@ -14,15 +14,15 @@ module M = struct
   [@@deriving sexp]
 
   let alist =
-    [ Unknown, 0
-    ; Principal, 1
-    ; Srv_inst, 2
-    ; Srv_hst, 3
-    ; Srv_xhst, 4
-    ; Uid, 5
-    ; X500_principal, 6
-    ; Smtp_name, 7
-    ; Enterprise, 10
+    [ Unknown, 0, "Unknown"
+    ; Principal, 1, "Principal"
+    ; Srv_inst, 2, "Srv_inst"
+    ; Srv_hst, 3, "Srv_hst"
+    ; Srv_xhst, 4, "Srv_xhst"
+    ; Uid, 5, "Uid"
+    ; X500_principal, 6, "X500_principal"
+    ; Smtp_name, 7, "Smtp_name"
+    ; Enterprise, 10, "Enterprise"
     ]
 end
 

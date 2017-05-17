@@ -48,7 +48,7 @@ module Msg : sig
     (** variant type -> int map *)
     module type ALIST = sig
       type t
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     (** encoding and decoding *)
@@ -56,6 +56,8 @@ module Msg : sig
       type t
       val t_of_int : int -> t
       val int_of_t : t -> int
+      val t_of_string : string -> t
+      val string_of_t : t -> string
     end
 
     (** variant types compare via ints *)
@@ -69,6 +71,8 @@ module Msg : sig
       type t = M.t
       val t_of_int : int -> t
       val int_of_t : t -> int
+      val t_of_string : string -> t
+      val string_of_t : t -> string
     end
   end
 
@@ -162,7 +166,7 @@ module Msg : sig
       | Smtp_name
       | Enterprise
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
@@ -211,7 +215,7 @@ module Msg : sig
 
     module M : sig
       type t = ty
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
@@ -245,7 +249,7 @@ module Msg : sig
       | Hmac_sha256_192_aes256
       | Reserved_1
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
@@ -267,7 +271,7 @@ module Msg : sig
       | Net_bios
       | Ipv6
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
@@ -282,7 +286,7 @@ module Msg : sig
       | Krb5_over_TLS
       | Reserved_0
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
@@ -297,7 +301,7 @@ module Msg : sig
       | Reserved_0
       | FX_FAST_ARMOR_AP_REQUEST
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
@@ -314,7 +318,7 @@ module Msg : sig
       | TCP
       | TLS
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
@@ -325,7 +329,7 @@ module Msg : sig
   module Ticket_flags : sig
     module Flags : sig
       type t =
-      | Reserved
+      | Reserved_0
       | Forwardable
       | Forwarded
       | Proxiable
@@ -340,7 +344,7 @@ module Msg : sig
       | Transited_policy_checked
       | Ok_as_delegate
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
       module Encoding_options : sig
         val min_bits : int
       end
@@ -356,7 +360,7 @@ module Msg : sig
   module Kdc_options : sig
     module Flags : sig
       type t =
-      | Reserved
+      | Reserved_0
       | Forwardable
       | Forwarded
       | Proxiable
@@ -377,7 +381,7 @@ module Msg : sig
       | Renew
       | Validate
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
       module Encoding_options : sig
         val min_bits : int
       end
@@ -398,7 +402,7 @@ module Msg : sig
       | Hide_client_names
       | Kdc_follow_referrals
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
       module Encoding_options : sig
         val min_bits : int
       end
@@ -550,7 +554,7 @@ module Msg : sig
       | PA_SUPPORTED_ETYPES
       | PA_EXTENDED_ERROR
 
-      val alist : (t * int) list
+      val alist : (t * int * string) list
     end
 
     include Asn1_intf.S with
