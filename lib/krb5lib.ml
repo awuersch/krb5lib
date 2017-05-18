@@ -27,6 +27,8 @@ module Msg = struct
 
   module As_req = As_req
 
+  module As_rep = As_rep
+
   module Authorization_data = Authorization_data
 
   module Encrypted_data = Encrypted_data
@@ -39,6 +41,12 @@ module Msg = struct
 
   module Checksum = Checksum
 
+  module Enc_kdc_rep_part = Enc_kdc_rep_part
+
+  module Enc_as_rep_part = Enc_as_rep_part
+
+  module Enc_tgs_rep_part = Enc_tgs_rep_part
+
   module Enc_ticket_part = Enc_ticket_part
 
   module Fast_armor_type = Fast_armor_type
@@ -49,9 +57,17 @@ module Msg = struct
 
   module Host_address = Host_address
 
+  module Kdc_rep = Kdc_rep
+
   module Kdc_req_body = Kdc_req_body
 
+  module Kdc_req = Kdc_req
+
   module Kdc_options = Kdc_options
+
+  module Last_req_inst = Last_req_inst
+
+  module Last_req = Last_req
 
   module Name_type = Name_type
 
@@ -64,6 +80,8 @@ module Msg = struct
   module Realm = Realm
 
   module Tcp_extension = Tcp_extension
+
+  module Tgs_rep = Tgs_rep
 
   module Tgs_req = Tgs_req
 

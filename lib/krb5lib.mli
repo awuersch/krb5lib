@@ -485,6 +485,25 @@ module Msg : sig
       and type Ast.t = Host_address.Ast.t list
   end
 
+  (** Last req, see {{:https://tools.ietf.org/html/rfc4120#section-5.4.2}rfc4120 Section 5.4.2 KRB_KDC_REP Definition} *)
+  module Last_req_inst : sig
+    type t =
+      { lr_type : Krb_int32.t
+      ; lr_value : Kerberos_time.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_int32.Ast.t * Kerberos_time.Ast.t
+  end
+
+  (** Last req, see {{:https://tools.ietf.org/html/rfc4120#section-5.4.2}rfc4120 Section 5.4.2 KRB_KDC_REP Definition} *)
+  module Last_req : sig
+    type t = Last_req_inst.t list
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Last_req_inst.Ast.t list
+  end
+
   (** Pre-authentication data types, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-4} Kerberos Pre-authentication and Typed Data, Last updated 2017-03-02} *)
   module Pa_data_type : sig
     module M : sig
@@ -627,6 +646,58 @@ module Msg : sig
             * Authorization_data.Ast.t option)))))))))
   end
 
+  module Enc_kdc_rep_part : sig
+    type t =
+      { key : Encryption_key.t
+      ; last_req : Last_req.t
+      ; nonce : Uint32.t
+      ; key_expiration : Kerberos_time.t option
+      ; flags : Ticket_flags.t
+      ; authtime : Kerberos_time.t
+      ; starttime : Kerberos_time.t option
+      ; endtime : Kerberos_time.t
+      ; renew_till : Kerberos_time.t option
+      ; srealm : Realm.t
+      ; sname : Principal_name.t
+      ; caddr : Host_addresses.t
+      }
+    module Ast : sig
+      type t =
+        Encryption_key.Ast.t
+        * (Last_req.Ast.t
+        * (Uint32.Ast.t
+        * (Kerberos_time.Ast.t option
+        * (Ticket_flags.Ast.t
+        * (Kerberos_time.Ast.t
+        * (Kerberos_time.Ast.t option
+        * (Kerberos_time.Ast.t
+        * (Kerberos_time.Ast.t option
+        * (Realm.Ast.t
+        * (Principal_name.Ast.t
+        * Host_addresses.Ast.t option))))))))))
+ 
+      val app_asn : Application_tag.t -> t Asn.t
+    end
+    val ast_of_t : t -> Ast.t
+    val t_of_ast : Ast.t -> t
+    val sexp_of_t : t -> Sexplib.Sexp.t
+    val t_of_sexp : Sexplib.Sexp.t -> t
+  end
+
+  module Enc_as_rep_part : sig
+    type t = Enc_kdc_rep_part.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Enc_kdc_rep_part.Ast.t
+  end
+
+  module Enc_tgs_rep_part : sig
+    type t = Enc_kdc_rep_part.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Enc_kdc_rep_part.Ast.t
+  end
+
   module Ticket : sig
     type t =
       { realm : Realm.t
@@ -672,32 +743,65 @@ module Msg : sig
             *  Ticket.Ast.t list option))))))))))
   end
 
-  module As_req : sig
+  module Kdc_rep : sig
+    type t =
+      { padata   : Pa_data.t list
+      ; crealm   : Realm.t
+      ; cname    : Principal_name.t
+      ; ticket   : Ticket.t
+      ; enc_part : Encrypted_data.t
+      }
+    module Ast : sig
+      type t
+      val app_asn : Application_tag.t -> t Asn.t
+    end
+    val app_ast_of_t : t -> Application_tag.t -> Ast.t
+    val t_of_ast : Ast.t -> t
+    val sexp_of_t : t -> Sexplib.Sexp.t
+    val t_of_sexp : Sexplib.Sexp.t -> t
+  end
+
+  module Kdc_req : sig
     type t =
       { padata : Pa_data.t list
       ; req_body : Kdc_req_body.t
       }
+    module Ast : sig
+      type t = int * int * Pa_data.Ast.t list option * Kdc_req_body.Ast.t
+      val app_asn : Application_tag.t -> t Asn.t
+    end
+    val app_ast_of_t : t -> Application_tag.t -> Ast.t
+    val t_of_ast : Ast.t -> t
+    val sexp_of_t : t -> Sexplib.Sexp.t
+    val t_of_sexp : Sexplib.Sexp.t -> t
+  end
+
+  module As_rep : sig
+    type t = Kdc_rep.t
     include Asn1_intf.S with
           type t := t
-      and type Ast.t =
-              int (* pvno = 5 *)
-            * int (* msg_type = Application_tag.int_of_t 'As_req *)
-            * Pa_data.Ast.t list option (* Non-empty *)
-            * Kdc_req_body.Ast.t
+      and type Ast.t = Kdc_rep.Ast.t
+  end
+
+  module As_req : sig
+    type t = Kdc_req.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Kdc_req.Ast.t
+  end
+
+  module Tgs_rep : sig
+    type t = Kdc_rep.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Kdc_rep.Ast.t
   end
 
   module Tgs_req : sig
-    type t =
-      { padata : Pa_data.t list
-      ; req_body : Kdc_req_body.t
-      }
+    type t = Kdc_req.t
     include Asn1_intf.S with
           type t := t
-      and type Ast.t =
-              int (* pvno = 5 *)
-            * int (* msg_type = Application_tag.int_of_t 'Tgs_req *)
-            * Pa_data.Ast.t list option (* Non-empty *)
-            * Kdc_req_body.Ast.t
+      and type Ast.t = Kdc_req.Ast.t
   end
 
   module Types : sig
