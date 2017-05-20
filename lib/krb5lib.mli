@@ -780,6 +780,47 @@ module Msg : sig
             Z.t * Z.t * Ap_options.Ast.t * Ticket.Ast.t * Encrypted_data.Ast.t
   end
 
+  module Authenticator : sig
+    type t =
+      { crealm : Realm.t
+      ; cname : Principal_name.t
+      ; cksum : Checksum.t option
+      ; cusec : Microseconds.t
+      ; ctime : Kerberos_time.t
+      ; subkey : Encryption_key.t option
+      ; seq_number : Uint32.t option
+      ; authorization_data : Authorization_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Z.t
+            * (Realm.Ast.t
+            * (Principal_name.Ast.t
+            * (Checksum.Ast.t option
+            * (Microseconds.Ast.t
+            * (Kerberos_time.Ast.t
+            * (Encryption_key.Ast.t option
+            * (Uint32.Ast.t option
+            *  Authorization_data.Ast.t option)))))))
+  end
+
+  module Enc_ap_rep_part : sig
+    type t =
+      { ctime : Kerberos_time.t
+      ; cusec : Microseconds.t
+      ; subkey : Encryption_key.t option
+      ; seq_number : Uint32.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Kerberos_time.Ast.t
+            * Microseconds.Ast.t
+            * Encryption_key.Ast.t option
+            * Uint32.Ast.t option
+  end
+
   module Ap_rep : sig
     type t =
       { enc_part : Encrypted_data.t
@@ -859,6 +900,53 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Kdc_req.Ast.t
+  end
+
+  module Krb_safe_body : sig
+    type t =
+      { user_data : Octet_string.t
+      ; timestamp : Kerberos_time.t option
+      ; usec : Microseconds.t option
+      ; seq_number : Uint32.t option
+      ; s_address : Host_address.t
+      ; r_address : Host_address.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Octet_string.Ast.t
+            * (Kerberos_time.Ast.t option
+            * (Microseconds.Ast.t option
+            * (Uint32.Ast.t option
+            * (Host_address.Ast.t
+            *  Host_address.Ast.t option))))
+  end
+
+  module Krb_safe : sig
+    type t =
+      { safe_body : Krb_safe_body.t
+      ; cksum : Checksum.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Krb_safe_body.Ast.t * Checksum.Ast.t
+  end
+
+  module Krb_priv : sig
+    type t =
+      { enc_part : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Encrypted_data.Ast.t
+  end
+
+  (** structurally same except for application tag *)
+  module Enc_krb_priv_part : sig
+    type t = Krb_safe_body.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_safe_body.Ast.t
   end
 
   module Types : sig

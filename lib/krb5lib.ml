@@ -37,6 +37,8 @@ module Msg = struct
 
   module As_rep = As_rep
 
+  module Authenticator = Authenticator
+
   module Authorization_data = Authorization_data
 
   module Encrypted_data = Encrypted_data
@@ -51,7 +53,11 @@ module Msg = struct
 
   module Enc_kdc_rep_part = Enc_kdc_rep_part
 
+  module Enc_ap_rep_part = Enc_ap_rep_part
+
   module Enc_as_rep_part = Enc_as_rep_part
+
+  module Enc_krb_priv_part = Enc_krb_priv_part
 
   module Enc_tgs_rep_part = Enc_tgs_rep_part
 
@@ -72,6 +78,12 @@ module Msg = struct
   module Kdc_req = Kdc_req
 
   module Kdc_options = Kdc_options
+
+  module Krb_priv = Krb_priv
+
+  module Krb_safe_body = Krb_safe_body
+
+  module Krb_safe = Krb_safe
 
   module Last_req_inst = Last_req_inst
 
