@@ -1,3 +1,5 @@
+open Asn
+
 (*---------------------------------------------------------------------------
    Copyright (c) 2017 Tony Wuersch. All rights reserved.
    Copyright (c) 2015 Brandon Bohrer. All rights reserved.
@@ -93,9 +95,12 @@ module Msg : sig
   module Uint32 : sig
     (** to monomorphic type *)
     include Asn1_intf.S with type t = int64 and type Ast.t = Z.t
+  end
 
-    (** maps variant types to ASN.1 types, given a mapping to int *)
-    module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
+  (** Microseconds type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.4}rfc4120 Section 5.2.4. Constrained Integer Types} *)
+  module Microseconds : sig
+    (** to monomorphic type *)
+    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
   end
 
   (** Realm type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.2}rfc4120 Section 5.2.2. Realm and PrincipalName} *)
@@ -343,6 +348,26 @@ module Msg : sig
       | Hw_authent
       | Transited_policy_checked
       | Ok_as_delegate
+
+      val alist : (t * int * string) list
+      module Encoding_options : sig
+        val min_bits : int
+      end
+    end
+
+    module FlagSet : Set.S
+
+    include Asn1_intf.S with
+         type t = FlagSet.t
+     and type Ast.t = bool array
+  end
+
+  module Ap_options : sig
+    module Flags : sig
+      type t =
+      | Reserved_0
+      | Use_session_key
+      | Mutual_required
 
       val alist : (t * int * string) list
       module Encoding_options : sig
@@ -643,7 +668,7 @@ module Msg : sig
             (* Non-empty *)
             * (Host_addresses.Ast.t option
             (* Non-empty *)
-            * Authorization_data.Ast.t option)))))))))
+            *  Authorization_data.Ast.t option)))))))))
   end
 
   module Enc_kdc_rep_part : sig
@@ -707,7 +732,7 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t =
-            int * Realm.Ast.t * Principal_name.Ast.t * Encrypted_data.Ast.t
+            Z.t * Realm.Ast.t * Principal_name.Ast.t * Encrypted_data.Ast.t
   end
 
   module Kdc_req_body : sig
@@ -743,6 +768,27 @@ module Msg : sig
             *  Ticket.Ast.t list option))))))))))
   end
 
+  module Ap_req : sig
+    type t =
+      { ap_options : Ap_options.t
+      ; ticket : Ticket.t
+      ; authenticator : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Z.t * Z.t * Ap_options.Ast.t * Ticket.Ast.t * Encrypted_data.Ast.t
+  end
+
+  module Ap_rep : sig
+    type t =
+      { enc_part : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Encrypted_data.Ast.t
+  end
+
   module Kdc_rep : sig
     type t =
       { padata   : Pa_data.t list
@@ -752,10 +798,17 @@ module Msg : sig
       ; enc_part : Encrypted_data.t
       }
     module Ast : sig
-      type t
-      val app_asn : Application_tag.t -> t Asn.t
+      type t =
+          Z.t (* pvno - 5 *)
+        * (Z.t (* msg_type *)
+        * (Pa_data.Ast.t list option (* Non-empty *)
+        * (Realm.Ast.t
+        * (Principal_name.Ast.t
+        * (Ticket.Ast.t
+        *  Encrypted_data.Ast.t)))))
+      val asn : t Asn.t
     end
-    val app_ast_of_t : t -> Application_tag.t -> Ast.t
+    val app_ast_of_t : Application_tag.t -> t -> Ast.t
     val t_of_ast : Ast.t -> t
     val sexp_of_t : t -> Sexplib.Sexp.t
     val t_of_sexp : Sexplib.Sexp.t -> t
@@ -767,10 +820,14 @@ module Msg : sig
       ; req_body : Kdc_req_body.t
       }
     module Ast : sig
-      type t = int * int * Pa_data.Ast.t list option * Kdc_req_body.Ast.t
-      val app_asn : Application_tag.t -> t Asn.t
+      type t =
+          Z.t
+        * Z.t
+        * Pa_data.Ast.t list option
+        * Kdc_req_body.Ast.t
+      val asn : t Asn.t
     end
-    val app_ast_of_t : t -> Application_tag.t -> Ast.t
+    val app_ast_of_t : Application_tag.t -> t -> Ast.t
     val t_of_ast : Ast.t -> t
     val sexp_of_t : t -> Sexplib.Sexp.t
     val t_of_sexp : Sexplib.Sexp.t -> t

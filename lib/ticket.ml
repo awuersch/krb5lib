@@ -10,19 +10,19 @@ type t =
 
 module Ast = struct
   type t =
-    int * Realm.Ast.t * Principal_name.Ast.t * Encrypted_data.Ast.t
+    Z.t * Realm.Ast.t * Principal_name.Ast.t * Encrypted_data.Ast.t
 
   let asn =
     Application_tag.tag `Ticket
       (sequence4
-         (tag_required 0 ~label:"tkt-vno" int)
+         (tag_required 0 ~label:"tkt-vno" integer)
          (tag_required 1 ~label:"realm" Realm.Ast.asn)
          (tag_required 2 ~label:"sname" Principal_name.Ast.asn)
          (tag_required 3 ~label:"enc_part" Encrypted_data.Ast.asn))
 end
 
 let ast_of_t t =
-  ( 5
+  ( Z.of_int 5
   , Realm.ast_of_t t.realm
   , Principal_name.ast_of_t t.sname
   , Encrypted_data.ast_of_t t.enc_part )

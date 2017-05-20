@@ -1,6 +1,6 @@
 open Sexplib.Std
 
-type t = int64 [@@deriving sexp]
+type t = int32 [@@deriving sexp]
 
 module Ast = struct
   type t = Z.t
@@ -10,13 +10,13 @@ end
 
 (* convert out of range values to random in range values *)
 let ast_of_t t =
-  if t < 0L || t > 4294967295L
-  then Random.int64 4294967296L |> Z.of_int64
-  else Z.of_int64 t
+  if t < 0l || t > 999999l
+  then Random.int32 1000000l |> Z.of_int32
+  else Z.of_int32 t
 
 (* convert out of range values to random in range values *)
 let t_of_ast ast =
-  let i = Z.to_int64 ast in
-    if i < 0L || i > 4294967295L
-    then Random.int64 4294967296L
+  let i = Z.to_int32 ast in
+    if i < 0l || i > 999999l
+    then Random.int32 1000000l
     else i

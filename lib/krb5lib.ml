@@ -13,6 +13,8 @@ module Msg = struct
 
   module Krb_int32 = Krb_int32
 
+  module Microseconds = Microseconds
+
   module Uint32 = Uint32
 
   module Kerberos_string = Kerberos_string
@@ -22,6 +24,12 @@ module Msg = struct
   module Kerberos_time = Kerberos_time
 
   module Address_type = Address_type
+
+  module Ap_options = Ap_options
+
+  module Ap_req = Ap_req
+
+  module Ap_rep = Ap_rep
 
   module Application_tag = Application_tag
 

@@ -1,5 +1,8 @@
 let all =
 [ "Address_type", (module Address_type : Asn1_intf.S)
+; "Ap_options", (module Ap_options : Asn1_intf.S)
+; "Ap_req", (module Ap_req : Asn1_intf.S)
+; "Ap_rep", (module Ap_rep : Asn1_intf.S)
 ; "As_rep", (module As_rep : Asn1_intf.S)
 ; "As_req", (module As_req : Asn1_intf.S)
 ; "Authorization_data", (module Authorization_data : Asn1_intf.S)
@@ -29,7 +32,7 @@ let all =
 ; "Pa_data", (module Pa_data : Asn1_intf.S)
 ; "Principal_name", (module Principal_name : Asn1_intf.S)
 ; "Realm", (module Realm : Asn1_intf.S)
-; "Tcp_extension", (module Tgs_req : Asn1_intf.S)
+; "Tcp_extension", (module Tcp_extension : Asn1_intf.S)
 ; "Tgs_rep", (module Tgs_rep : Asn1_intf.S)
 ; "Tgs_req", (module Tgs_req : Asn1_intf.S)
 ; "Ticket_flags", (module Ticket_flags : Asn1_intf.S)

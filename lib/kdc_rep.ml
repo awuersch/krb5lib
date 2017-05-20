@@ -12,34 +12,33 @@ type t =
 
 module Ast = struct
   type t =
-      int (* pvno - 5 *)
-    * (int (* msg_type *)
+      Z.t (* pvno - 5 *)
+    * (Z.t (* msg_type *)
     * (Pa_data.Ast.t list option (* Non-empty *)
     * (Realm.Ast.t
     * (Principal_name.Ast.t
     * (Ticket.Ast.t
-    * (Encrypted_data.Ast.t))))))
+    *  Encrypted_data.Ast.t)))))
 
-  let app_asn tag =
-    Application_tag.tag tag
-      (sequence
-         ( tag_required 0 ~label:"pvno" int
-         @ tag_required 1 ~label:"msg-type" int
-         @ tag_optional 2 ~label:"padata" (sequence_of Pa_data.Ast.asn)
-         @ tag_required 4 ~label:"crealm" Realm.Ast.asn
-         @ tag_required 4 ~label:"cname" Principal_name.Ast.asn
-         @ tag_required 4 ~label:"ticket" Ticket.Ast.asn
-        -@ tag_required 4 ~label:"enc-part" Encrypted_data.Ast.asn))
+  let asn =
+    sequence
+      ( tag_required 0 ~label:"pvno" integer
+      @ tag_required 1 ~label:"msg-type" integer
+      @ tag_optional 2 ~label:"padata" (sequence_of Pa_data.Ast.asn)
+      @ tag_required 3 ~label:"crealm" Realm.Ast.asn
+      @ tag_required 4 ~label:"cname" Principal_name.Ast.asn
+      @ tag_required 5 ~label:"ticket" Ticket.Ast.asn
+     -@ tag_required 6 ~label:"enc-part" Encrypted_data.Ast.asn)
 end
 
-let app_ast_of_t t tag =
+let app_ast_of_t tag t =
   let padata =
     match t.padata with
     | [] -> None
     | lst -> Some (List.map Pa_data.ast_of_t lst)
   in
-    5 (* Where 5 means krb5 - this is a constant forever *)
-  , ( Application_tag.int_of_t tag
+    Z.of_int 5 (* Where 5 means krb5 - this is a constant forever *)
+  , ( Application_tag.int_of_t tag |> Z.of_int
   , ( padata
   , ( Realm.ast_of_t t.crealm
   , ( Principal_name.ast_of_t t.cname
