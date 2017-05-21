@@ -1041,6 +1041,78 @@ module Msg : sig
             *  Octet_string.Ast.t option)))))))))))
   end
 
+  module Method_data : sig
+    type t = { method_data : Pa_data.t list }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Pa_data.Ast.t list
+  end
+
+  module Typed_datum : sig
+    type t =
+      { data_type : Krb_int32.t
+      ; data_value : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t option
+  end
+
+  module Typed_data : sig
+    type t = Typed_datum.t list
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Typed_datum.Ast.t list
+  end
+
+  module Pa_enc_ts_enc : sig
+    type t =
+      { patimestamp : Kerberos_time.t
+      ; pausec : Microseconds.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Kerberos_time.Ast.t * Microseconds.Ast.t option
+  end
+
+  module Etype_info_entry : sig
+    type t =
+      { etype : Krb_int32.t
+      ; salt : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t option
+  end
+
+  module Etype_info : sig
+    type t = Etype_info_entry.t list
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Etype_info_entry.Ast.t list
+  end
+
+  module Etype_info2_entry : sig
+    type t =
+      { etype : Krb_int32.t
+      ; salt : Kerberos_string.t option
+      ; s2kparams : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Krb_int32.Ast.t
+            * Kerberos_string.Ast.t option
+            * Octet_string.Ast.t option
+  end
+
+  module Etype_info2 : sig
+    type t = Etype_info2_entry.t list
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Etype_info2_entry.Ast.t list
+  end
+
   module Types : sig
     val all  : (string * (module Asn1_intf.S)) list
     val some : (string * (module Asn1_intf.S)) list

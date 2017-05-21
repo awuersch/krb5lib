@@ -65,6 +65,14 @@ module Msg = struct
 
   module Enc_ticket_part = Enc_ticket_part
 
+  module Etype_info = Etype_info
+
+  module Etype_info2 = Etype_info2
+
+  module Etype_info_entry = Etype_info_entry
+
+  module Etype_info2_entry = Etype_info2_entry
+
   module Fast_armor_type = Fast_armor_type
 
   module Fast_options = Fast_options
@@ -97,7 +105,11 @@ module Msg = struct
 
   module Last_req = Last_req
 
+  module Method_data = Method_data
+
   module Name_type = Name_type
+
+  module Pa_enc_ts_enc = Pa_enc_ts_enc
 
   module Pa_data_type = Pa_data_type
 
@@ -120,6 +132,10 @@ module Msg = struct
   module Transited_encoding = Transited_encoding
 
   module Transport_type = Transport_type
+
+  module Typed_data = Typed_data
+
+  module Typed_datum = Typed_datum
 
   module Types = Types
 end
