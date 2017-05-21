@@ -57,6 +57,8 @@ module Msg = struct
 
   module Enc_as_rep_part = Enc_as_rep_part
 
+  module Enc_krb_cred_part = Enc_krb_cred_part
+
   module Enc_krb_priv_part = Enc_krb_priv_part
 
   module Enc_tgs_rep_part = Enc_tgs_rep_part
@@ -78,6 +80,12 @@ module Msg = struct
   module Kdc_req = Kdc_req
 
   module Kdc_options = Kdc_options
+
+  module Krb_cred = Krb_cred
+
+  module Krb_cred_info = Krb_cred_info
+
+  module Krb_error = Krb_error
 
   module Krb_priv = Krb_priv
 

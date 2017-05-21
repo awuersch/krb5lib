@@ -949,6 +949,98 @@ module Msg : sig
       and type Ast.t = Krb_safe_body.Ast.t
   end
 
+  module Krb_cred : sig
+    type t =
+      { tickets : Ticket.t list
+      ; enc_part : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Ticket.Ast.t list * Encrypted_data.Ast.t
+  end
+
+  module Krb_cred_info : sig
+    type t =
+      { key : Encryption_key.t
+      ; prealm : Realm.t option
+      ; pname : Principal_name.t option
+      ; flags : Ticket_flags.t option
+      ; authtime : Kerberos_time.t option
+      ; starttime : Kerberos_time.t option
+      ; endtime : Kerberos_time.t option
+      ; renew_till : Kerberos_time.t option
+      ; srealm : Realm.t option
+      ; sname : Principal_name.t option
+      ; caddr : Host_addresses.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Encryption_key.Ast.t
+            * (Realm.Ast.t option
+            * (Principal_name.Ast.t option
+            * (Ticket_flags.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Realm.Ast.t option
+            * (Principal_name.Ast.t option
+            *  Host_addresses.Ast.t option)))))))))
+  end
+
+  module Enc_krb_cred_part : sig
+    type t =
+      { ticket_info : Krb_cred_info.t list
+      ; nonce : Uint32.t option
+      ; timestamp : Kerberos_time.t option
+      ; usec : Microseconds.t option
+      ; s_address : Host_address.t option
+      ; r_address : Host_address.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Krb_cred_info.Ast.t list
+            * (Uint32.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Microseconds.Ast.t option
+            * (Host_address.Ast.t option
+            *  Host_address.Ast.t option))))
+  end
+
+  module Krb_error : sig
+    type t =
+      { ctime      : Kerberos_time.t option
+      ; cusec      : Microseconds.t option
+      ; stime      : Kerberos_time.t
+      ; susec      : Microseconds.t
+      ; error_code : Krb_int32.t
+      ; crealm     : Realm.t option
+      ; cname      : Principal_name.t option
+      ; realm      : Realm.t
+      ; sname      : Principal_name.t
+      ; e_text     : Kerberos_string.t option
+      ; e_data     : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Z.t (* pvno - 5 *)
+            * (Z.t (* msg_type *)
+            * (Kerberos_time.Ast.t option
+            * (Microseconds.Ast.t option
+            * (Kerberos_time.Ast.t
+            * (Microseconds.Ast.t
+            * (Krb_int32.Ast.t
+            * (Realm.Ast.t option
+            * (Principal_name.Ast.t option
+            * (Realm.Ast.t
+            * (Principal_name.Ast.t
+            * (Kerberos_string.Ast.t option
+            *  Octet_string.Ast.t option)))))))))))
+  end
+
   module Types : sig
     val all  : (string * (module Asn1_intf.S)) list
     val some : (string * (module Asn1_intf.S)) list

@@ -43,7 +43,7 @@ module Ast = struct
        @ (tag_required ~label:"authtime" 5 Kerberos_time.Ast.asn)
        @ (tag_optional ~label:"starttime" 6 Kerberos_time.Ast.asn)
        @ (tag_required ~label:"endtime" 7 Kerberos_time.Ast.asn)
-       @ (tag_optional ~label:"renew_till" 8 Kerberos_time.Ast.asn)
+       @ (tag_optional ~label:"renew-till" 8 Kerberos_time.Ast.asn)
        @ (tag_optional ~label:"caddr" 9 Host_addresses.Ast.asn)
       -@ (tag_optional ~label:"authorization_data" 10 Authorization_data.Ast.asn)))
 end
