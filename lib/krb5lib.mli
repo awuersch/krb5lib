@@ -21,39 +21,53 @@ open Asn
 (** {1 Krb5lib} Krb5 message types *)
 module Msg : sig
 
+  (** ASN.1 interface -- every message module matches this *)
   module Asn1_intf : sig
+
     (** Each ASN.1 type matches or extends this *)
     module type S = sig
+
+      (** a primitive or record representation *)
       type t
   
-      (** Abstract syntax tree, typed per asn1-combinators package *)
+      (** Abstract syntax tree, typed per asn1-combinators *)
       module Ast : sig
+
+        (** A primitive, tuple, nested pair, or list.
+
+            Tuples and nested pairs are equivalent.
+            [SUGG] it's possible the tuple should be only a nested pair.
+        *)
         type t
+
+        (** an ASN.1 type, as per asn1-combinators package *)
         val asn : t Asn.t
       end
   
-      (* marshalling *)
+      (** marshalling *)
       val ast_of_t : t -> Ast.t
 
-      (* de-marshalling *)
+      (** de-marshalling *)
       val t_of_ast : Ast.t -> t
 
-      (* serializing *)
+      (** serializing *)
       val sexp_of_t : t -> Sexplib.Sexp.t
 
-      (* de-serializing *)
+      (** de-serializing *)
       val t_of_sexp : Sexplib.Sexp.t -> t
     end
   end
 
+  (** Utility module -- module types and functors *)
   module Interfaces : sig
-    (** variant type -> int map *)
+
+    (** variant type -> int map * string map *)
     module type ALIST = sig
       type t
       val alist : (t * int * string) list
     end
 
-    (** encoding and decoding *)
+    (** Encoding and decoding *)
     module type Intable = sig
       type t
       val t_of_int : int -> t
@@ -62,7 +76,7 @@ module Msg : sig
       val string_of_t : t -> string
     end
 
-    (** variant types compare via ints *)
+    (** To set up sets *)
     module OrderedType_of_Intable (M : Intable) : sig
       type t = M.t
       val compare : t -> t -> int
@@ -78,40 +92,55 @@ module Msg : sig
     end
   end
 
-  (** KerberosString type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.1}rfc4120 Section 5.2.1. KerberosString} *)
-  module Kerberos_string :
-    Asn1_intf.S with type t = string and type Ast.t = string
-
-  (** Int32 type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.4}rfc4120 Section 5.2.4. Constrained Integer Types} *)
-  module Krb_int32 : sig
-    (** to monomorphic type *)
-    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
-
-    (** maps variant types to ASN.1 types, given a mapping to int *)
-    module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
-  end
-
-  (** UInt32 type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.4}rfc4120 Section 5.2.4. Constrained Integer Types} *)
-  module Uint32 : sig
-    (** to monomorphic type *)
-    include Asn1_intf.S with type t = int64 and type Ast.t = Z.t
-  end
-
-  (** Microseconds type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.4}rfc4120 Section 5.2.4. Constrained Integer Types} *)
-  module Microseconds : sig
-    (** to monomorphic type *)
-    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
-  end
-
-  (** Realm type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.2}rfc4120 Section 5.2.2. Realm and PrincipalName} *)
-  module Realm :
-    Asn1_intf.S with type t = string and type Ast.t = string
-
-  (** ASN.1 Octet_string type *)
+  (** Utility msg.  ASN.1 Octet_string type. *)
   module Octet_string :
     Asn1_intf.S with type t = string and type Ast.t = Cstruct.t
 
-  (** Realm type, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.3}rfc4120 Section 5.2.3. KerberosTime} *)
+  (** Utility msg.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.1> Section KerberosString
+  *)
+  module Kerberos_string :
+    Asn1_intf.S with type t = string and type Ast.t = string
+
+  (** Utility msg.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.4> Section Constrained Integer Types
+  *)
+  module Krb_int32 : sig
+    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
+    module Of_alist (M : Interfaces.ALIST) : Asn1_intf.S with type t = M.t
+  end
+
+  (** Utility msg.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.4> Section Constrained Integer Types
+  *)
+  module Uint32 : sig
+    include Asn1_intf.S with type t = int64 and type Ast.t = Z.t
+  end
+
+  (** Utility msg.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.4> Section Constrained Integer Types
+  *)
+  module Microseconds : sig
+    include Asn1_intf.S with type t = int32 and type Ast.t = Z.t
+  end
+
+  (** Utility msg.  Kerberos realm.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.2> Section Realm and PrincipalName
+  *)
+  module Realm :
+    Asn1_intf.S with type t = string and type Ast.t = string
+
+  (** Utility msg.  Kerberos Time.
+      ASN.1 GeneralizedTime with no fractional seconds
+
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.3> Section KerberosTime
+  *)
   module Kerberos_time : sig
     type t =
     { year : int
@@ -122,6 +151,167 @@ module Msg : sig
     ; second : int
     }
     include Asn1_intf.S with type t := t and type Ast.t = Ptime.t
+  end
+
+  (** Utility msg.  Host Address.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.5> Section HostAddress and HostAddresses
+  *)
+  module Host_address : sig
+    type t =
+      { addr_type : Address_type.t
+      ; address : Octet_string.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Address_type.Ast.t * Cstruct.t
+  end
+
+  (** Utility msg.  Host Addresses.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.5> Section HostAddress and HostAddresses
+  *)
+  module Host_addresses : sig
+    type t = Host_address.t list
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Host_address.Ast.t list
+  end
+
+  (** Utility msg.  Authorization Data.
+    
+      AuthorizationData is always used as an OPTIONAL field.
+      It should not be empty.
+
+      There are four authorization element types:
+        {ul
+        {- AD-IF-RELEVANT: ad-type = 1}
+        {- AD-KDCIssued: ad-type = 4}
+        {- AD-AND_OR: ad-type = 5}
+        {- AD-MANDATORY-FOR-KDC: ad-type = 8}}
+
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6> Section AuthorizationData
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6.1> Section IF-RELEVANT
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6.2> Section KDCIssued
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6.3> Section AND-OR
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6.4> Section MANDATORY-FOR-KDC
+  *)
+  module Authorization_data : sig
+    module Datum : sig
+      type t =
+        { ad_type : Krb_int32.t
+        ; ad_data : Octet_string.t
+        }
+      include Asn1_intf.S with
+            type t := t
+        and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t
+    end
+
+    type t = Datum.t list
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Datum.Ast.t list
+  end
+
+  (** Utility msg.  Pre-authentication and Typed Data.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.7> Section PA-DATA.
+
+      Pre-authentication data types:
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-4> Kerberos Pre-authentication and Typed Data, Last updated 2017-03-02
+  *)
+  module Pa_data_type : sig
+    module M : sig
+      type t =
+      | PA_TGS_REQ (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_ENC_TIMESTAMP (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_PW_SALT (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_ENC_UNIX_TIME (** (deprecated) @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_SANDIA_SECUREID (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_SESAME (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_OSF_DCE (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_CYBERSAFE_SECUREID (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_AFS3_SALT (** @see <https://tools.ietf.org/html/rfc3961> *)
+      | PA_ETYPE_INFO (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_SAM_CHALLENGE (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-passwords-04> *)
+      | PA_SAM_RESPONSE (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-passwords-04> *)
+      | PA_PK_AS_REQ_OLD (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-pk-init-09> *)
+      | PA_PK_AS_REP_OLD (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-pk-init-09> *)
+      | PA_PK_AS_REQ (** @see <https://tools.ietf.org/html/rfc4556> *)
+      | PA_PK_AS_REP (** @see <https://tools.ietf.org/html/rfc4556> *)
+      | PA_PK_OCSP_RESPONSE (** @see <https://tools.ietf.org/html/rfc4557> *)
+      | PA_ETYPE_INFO2 (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_USE_SPECIFIED_KVNO (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_SVR_REFERRAL_INFO (** @see <https://tools.ietf.org/html/rfc6806> *)
+      | PA_SAM_REDIRECT (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_GET_FROM_TYPED_DATA (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | TD_PADATA (** @see <https://tools.ietf.org/html/rfc4120> *)
+      | PA_SAM_ETYPE_INFO (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-sam-03> *)
+      | PA_ALT_PRINC (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-hw-auth-04> *)
+      | PA_SERVER_REFERRAL (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-referrals-11> *)
+      | PA_SAM_CHALLENGE2 (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-sam-03> *)
+      | PA_SAM_RESPONSE2 (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-sam-03> *)
+      | PA_EXTRA_TGT (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | TD_PKINIT_CMS_CERTIFICATES (** @see <https://tools.ietf.org/html/rfc4556> *)
+      | TD_KRB_PRINCIPAL (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | TD_KRB_REALM (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | TD_TRUSTED_CERTIFIERS (** @see <https://tools.ietf.org/html/rfc4556> *)
+      | TD_CERTIFICATE_INDEX (** @see <https://tools.ietf.org/html/rfc4556> *)
+      | TD_APP_DEFINED_ERROR (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | TD_REQ_NONCE (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | TD_REQ_SEQ (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | TD_DH_PARAMETERS (** @see <https://tools.ietf.org/html/rfc4556> *)
+      | TD_CMS_DIGEST_ALGORITHMS (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-pkinit-alg-agility> *)
+      | TD_CERT_DIGEST_ALGORITHMS (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-pkinit-alg-agility> *)
+      | PA_PAC_REQUEST (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+      | PA_FOR_USER (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+      | PA_FOR_X509_USER (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+      | PA_FOR_CHECK_DUPS (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+      | PA_AS_CHECKSUM (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+      | PA_FX_COOKIE (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_AUTHENTICATION_SET (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_AUTH_SET_SELECTED (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_FX_FAST (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_FX_ERROR (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_ENCRYPTED_CHALLENGE (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_OTP_CHALLENGE (** @see <https://tools.ietf.org/html/rfc6560> *)
+      | PA_OTP_REQUEST (** @see <https://tools.ietf.org/html/rfc6560> *)
+      | PA_OTP_CONFIRM (** @see <https://tools.ietf.org/html/rfc6560> *)
+      | PA_OTP_PIN_CHANGE (** @see <https://tools.ietf.org/html/rfc6560> *)
+      | PA_EPAK_AS_REQ (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_EPAK_AS_REP (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | PA_PKINIT_KX (** @see <https://tools.ietf.org/html/rfc8062> *)
+      | PA_PKU2U_NAME (** @see <https://tools.ietf.org/html/draft-zhu-pku2u> *)
+      | PA_REQ_ENC_PA_REP (** @see <https://tools.ietf.org/html/6806> *)
+      | PA_AS_FRESHNESS (** @see <https://tools.ietf.org/html/rfc8070> *)
+      | PA_SUPPORTED_ETYPES (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+      | PA_EXTENDED_ERROR (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+
+      val alist : (t * int * string) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+  end
+
+  (** Utility msg.  Pre-authentication Data.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.7> Section PA-DATA.
+  *)
+  module Pa_data : sig
+    type t =
+      { padata_type : Pa_data_type.t   (** {!module:Pa_data_type.t} *)
+      ; padata_value : Octet_string.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Pa_data_type.Ast.t * Cstruct.t
   end
 
   (** Application tag numbers, see {{:https://tools.ietf.org/html/rfc4120#section-5.10}rfc4120 Section 5.10. Application Tag Numbers} *)
@@ -179,7 +369,11 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
-  (** Encryption type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1} Kerberos Encryption Type Numbers, Last updated 2017-03-02} *)
+  (** Encryption Type.
+      @see <https://tools.ietf.org/html/rfc3961> RFC
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1> Kerberos Encryption Type Numbers, LasChecksum typet updated 2017-03-02
+  *)
   module Encryption_type : sig
     type ty =
     | Reserved_0
@@ -228,31 +422,35 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
-  (** Checksum type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1} Kerberos Encryption Type Numbers, Last updated 2017-03-02} *)
+  (** Checksum type.
+      @see <https://tools.ietf.org/html/rfc3961> RFC
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-2> Kerberos Checksum Type Numbers, Last updated 2017-03-02
+  *)
   module Checksum_type : sig
     module M : sig
       type t =
-      | Reserved_0
-      | CRC32
-      | Rsa_md4
-      | Rsa_md4_des
-      | Des_mac
-      | Des_mac_k
-      | Rsa_md4_des_k
-      | Rsa_md5
-      | Rsa_md5_des
+      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.3> *)
+      | CRC32 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.3> *)
+      | Rsa_md4 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.2> *)
+      | Rsa_md4_des (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.5> *)
+      | Des_mac (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.7> *)
+      | Des_mac_k (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.8> *)
+      | Rsa_md4_des_k (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.6> *)
+      | Rsa_md5 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.1> *)
+      | Rsa_md5_des (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.4> *)
       | Rsa_md5_des3
       | Sha1_unkeyed_0
-      | Hmac_sha1_des3_kd
+      | Hmac_sha1_des3_kd (** @see <https://tools.ietf.org/html/rfc3961#section-6.3> *)
       | Hmac_sha1_des3
       | Sha1_unkeyed_1
-      | Hmac_sha1_96_aes128
-      | Hmac_sha1_96_aes256
-      | Cmac_camellia128
-      | Cmac_camellia256
-      | Hmac_sha256_128_aes128
-      | Hmac_sha256_192_aes256
-      | Reserved_1
+      | Hmac_sha1_96_aes128 (** @see <https://tools.ietf.org/html/rfc3962> *)
+      | Hmac_sha1_96_aes256 (** @see <https://tools.ietf.org/html/rfc3962> *)
+      | Cmac_camellia128 (** @see <https://tools.ietf.org/html/rfc6803> *)
+      | Cmac_camellia256 (** @see <https://tools.ietf.org/html/rfc6803> *)
+      | Hmac_sha256_128_aes128 (** @see <https://tools.ietf.org/html/rfc8009> *)
+      | Hmac_sha256_192_aes256 (** @see <https://tools.ietf.org/html/rfc8009> *)
+      | Reserved_1 (** @see <https://tools.ietf.org/html/rfc1964> *)
 
       val alist : (t * int * string) list
     end
@@ -284,12 +482,16 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
-  (** Tcp extension, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-3} Kerberos Encryption Type Numbers, Last updated 2017-03-02} *)
+  (** TCP Extensions.
+      @see <https://tools.ietf.org/html/rfc5021> RFC
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-3> Kerberos TCP Extensions, Last updated 2017-03-02
+  *)
   module Tcp_extension : sig
     module M : sig
       type t =
-      | Krb5_over_TLS
-      | Reserved_0
+      | Krb5_over_TLS (** @see <https://tools.ietf.org/html/rfc6251> *)
+      | Reserved_30 (** @see <https://tools.ietf.org/html/rfc5021> *)
 
       val alist : (t * int * string) list
     end
@@ -299,12 +501,16 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
-  (** FAST Armor type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-5} FAST Armor Types, Last updated 2017-03-02} *)
+  (** FAST Armor Type.
+      @see <https://tools.ietf.org/html/rfc6113> RFC
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-5> FAST Armor Types, Last updated 2017-03-02
+  *)
   module Fast_armor_type : sig
     module M : sig
       type t =
-      | Reserved_0
-      | FX_FAST_ARMOR_AP_REQUEST
+      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | FX_FAST_ARMOR_AP_REQUEST (** @see <https://tools.ietf.org/html/rfc6113> *)
 
       val alist : (t * int * string) list
     end
@@ -314,14 +520,18 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
-  (** Transport type, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-9} Kerberos Message Transport Types, Last updated 2017-03-02} *)
+  (** Transport Type.
+      @see <https://tools.ietf.org/html/rfc6784> RFC
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-9> Kerberos Message Transport Types, Last updated 2017-03-02
+  *)
   module Transport_type : sig
     module M : sig
       type t =
-      | Reserved_0
-      | UDP
-      | TCP
-      | TLS
+      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6784> *)
+      | UDP (** @see <https://tools.ietf.org/html/rfc6784> *)
+      | TCP (** @see <https://tools.ietf.org/html/rfc6784> *)
+      | TLS (** @see <https://tools.ietf.org/html/rfc6784> *)
 
       val alist : (t * int * string) list
     end
@@ -419,13 +629,17 @@ module Msg : sig
      and type Ast.t = bool array
   end
 
-  (** FAST options, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-6} FAST Options, Last updated 2017-03-02} *)
+  (** FAST Options.
+      @see <https://tools.ietf.org/html/rfc6113> RFC
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-6> FAST Options, Last updated 2017-03-02
+  *)
   module Fast_options : sig
     module Flags : sig
       type t =
-      | Reserved_0
-      | Hide_client_names
-      | Kdc_follow_referrals
+      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | Hide_client_names (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | Kdc_follow_referrals (** @see <https://tools.ietf.org/html/rfc6113> *)
 
       val alist : (t * int * string) list
       module Encoding_options : sig
@@ -491,25 +705,6 @@ module Msg : sig
       and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t
   end
 
-  (** Host address, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.5}rfc4120 Section 5.2.5 Host Address and Host Addresses} *)
-  module Host_address : sig
-    type t =
-      { addr_type : Address_type.t
-      ; address : Octet_string.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Address_type.Ast.t * Cstruct.t
-  end
-
-  (** Host addresses, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.5}rfc4120 Section 5.2.5 Host Address and Host Addresses} *)
-  module Host_addresses : sig
-    type t = Host_address.t list
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Host_address.Ast.t list
-  end
-
   (** Last req, see {{:https://tools.ietf.org/html/rfc4120#section-5.4.2}rfc4120 Section 5.4.2 KRB_KDC_REP Definition} *)
   module Last_req_inst : sig
     type t =
@@ -527,116 +722,6 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Last_req_inst.Ast.t list
-  end
-
-  (** Pre-authentication data types, see {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-4} Kerberos Pre-authentication and Typed Data, Last updated 2017-03-02} *)
-  module Pa_data_type : sig
-    module M : sig
-      type t =
-      | PA_TGS_REQ
-      | PA_ENC_TIMESTAMP
-      | PA_PW_SALT
-      | Reserved_0
-      | PA_ENC_UNIX_TIME
-      | PA_SANDIA_SECUREID
-      | PA_SESAME
-      | PA_OSF_DCE
-      | PA_CYBERSAFE_SECUREID
-      | PA_AFS3_SALT
-      | PA_ETYPE_INFO
-      | PA_SAM_CHALLENGE
-      | PA_SAM_RESPONSE
-      | PA_PK_AS_REQ_OLD
-      | PA_PK_AS_REP_OLD
-      | PA_PK_AS_REQ
-      | PA_PK_AS_REP
-      | PA_PK_OCSP_RESPONSE
-      | PA_ETYPE_INFO2
-      | PA_USE_SPECIFIED_KVNO
-      | PA_SVR_REFERRAL_INFO
-      | PA_SAM_REDIRECT
-      | PA_GET_FROM_TYPED_DATA
-      | TD_PADATA
-      | PA_SAM_ETYPE_INFO
-      | PA_ALT_PRINC
-      | PA_SERVER_REFERRAL
-      | PA_SAM_CHALLENGE2
-      | PA_SAM_RESPONSE2
-      | PA_EXTRA_TGT
-      | TD_PKINIT_CMS_CERTIFICATES
-      | TD_KRB_PRINCIPAL
-      | TD_KRB_REALM
-      | TD_TRUSTED_CERTIFIERS
-      | TD_CERTIFICATE_INDEX
-      | TD_APP_DEFINED_ERROR
-      | TD_REQ_NONCE
-      | TD_REQ_SEQ
-      | TD_DH_PARAMETERS
-      | TD_CMS_DIGEST_ALGORITHMS
-      | TD_CERT_DIGEST_ALGORITHMS
-      | PA_PAC_REQUEST
-      | PA_FOR_USER
-      | PA_FOR_X509_USER
-      | PA_FOR_CHECK_DUPS
-      | PA_AS_CHECKSUM
-      | PA_FX_COOKIE
-      | PA_AUTHENTICATION_SET
-      | PA_AUTH_SET_SELECTED
-      | PA_FX_FAST
-      | PA_FX_ERROR
-      | PA_ENCRYPTED_CHALLENGE
-      | PA_OTP_CHALLENGE
-      | PA_OTP_REQUEST
-      | PA_OTP_CONFIRM
-      | PA_OTP_PIN_CHANGE
-      | PA_EPAK_AS_REQ
-      | PA_EPAK_AS_REP
-      | PA_PKINIT_KX
-      | PA_PKU2U_NAME
-      | PA_REQ_ENC_PA_REP
-      | PA_AS_FRESHNESS
-      | PA_SUPPORTED_ETYPES
-      | PA_EXTENDED_ERROR
-
-      val alist : (t * int * string) list
-    end
-
-    include Asn1_intf.S with
-          type t = M.t
-      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
-  end
-
-  (** Pre-authorization data, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.7}rfc4120 Section 5.2.7 PA-DATA
-   * the specific structure of padata_value depends on the padata_type.
-   *)
-  module Pa_data : sig
-    type t =
-      { padata_type : Pa_data_type.t
-      ; padata_value : Octet_string.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Pa_data_type.Ast.t * Cstruct.t
-  end
-
-  (** Authorization data, see {{:https://tools.ietf.org/html/rfc4120#section-5.2.6}rfc4120 Section 5.2.6 AuthorizationData}
-   * the specific structure of ad_data depends on the ad_type.
-   *)
-  module Authorization_data : sig
-    module Datum : sig
-      type t =
-        { ad_type : Krb_int32.t
-        ; ad_data : Octet_string.t
-        }
-      include Asn1_intf.S with
-            type t := t
-        and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t
-    end
-
-    type t = Datum.t list
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Datum.Ast.t list
   end
 
   module Enc_ticket_part : sig
@@ -1048,21 +1133,21 @@ module Msg : sig
       and type Ast.t = Pa_data.Ast.t list
   end
 
-  module Typed_datum : sig
-    type t =
-      { data_type : Krb_int32.t
-      ; data_value : Octet_string.t option
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t option
-  end
-
   module Typed_data : sig
-    type t = Typed_datum.t list
+    module Datum : sig
+      type t =
+        { data_type : Krb_int32.t
+        ; data_value : Octet_string.t option
+        }
+      include Asn1_intf.S with
+            type t := t
+        and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t option
+    end
+
+    type t = Datum.t list
     include Asn1_intf.S with
           type t := t
-      and type Ast.t = Typed_datum.Ast.t list
+      and type Ast.t = Datum.Ast.t list
   end
 
   module Pa_enc_ts_enc : sig

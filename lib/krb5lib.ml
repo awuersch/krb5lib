@@ -7,21 +7,31 @@
 
 module Msg = struct 
 
-  module Interfaces = Interfaces
-
   module Asn1_intf = Asn1_intf
 
-  module Krb_int32 = Krb_int32
-
-  module Microseconds = Microseconds
-
-  module Uint32 = Uint32
-
-  module Kerberos_string = Kerberos_string
+  module Interfaces = Interfaces
 
   module Octet_string = Octet_string
 
+  module Kerberos_string = Kerberos_string
+
+  module Krb_int32 = Krb_int32
+
+  module Uint32 = Uint32
+
+  module Microseconds = Microseconds
+
+  module Realm = Realm
+
   module Kerberos_time = Kerberos_time
+
+  module Host_address = Host_address
+
+  module Host_addresses = Host_addresses
+
+  module Authorization_data = Authorization_data
+
+  module Ad_and_or = Ad_and_or
 
   module Ad_kdcissued = Ad_kdcissued
 
@@ -40,8 +50,6 @@ module Msg = struct
   module As_rep = As_rep
 
   module Authenticator = Authenticator
-
-  module Authorization_data = Authorization_data
 
   module Encrypted_data = Encrypted_data
 
@@ -79,10 +87,6 @@ module Msg = struct
 
   module Fast_options = Fast_options
 
-  module Host_addresses = Host_addresses
-
-  module Host_address = Host_address
-
   module Kdc_rep = Kdc_rep
 
   module Kdc_req_body = Kdc_req_body
@@ -119,8 +123,6 @@ module Msg = struct
 
   module Principal_name = Principal_name
 
-  module Realm = Realm
-
   module Tcp_extension = Tcp_extension
 
   module Tgs_rep = Tgs_rep
@@ -136,10 +138,6 @@ module Msg = struct
   module Transport_type = Transport_type
 
   module Typed_data = Typed_data
-
-  module Typed_datum = Typed_datum
-
-  module Ad_and_or = Ad_and_or
 
   module Types = Types
 end

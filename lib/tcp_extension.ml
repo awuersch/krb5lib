@@ -4,12 +4,12 @@ open Sexplib.Std
 module M = struct
   type t =
     | Krb5_over_TLS (* rfc6251 *)
-    | Reserved_0    (* rfc5021 *)
+    | Reserved_30   (* rfc5021 *)
     [@@deriving sexp]
 
   let alist =
     [ Krb5_over_TLS, 0, "Krb5_over_TLS"
-    ; Reserved_0   , 30, "Reserved_0"
+    ; Reserved_30,  30, "Reserved_0"
     ]
 end
 

@@ -58,7 +58,6 @@ let all =
 ; "Ticket", (module Ticket : Asn1_intf.S)
 ; "Transport_type", (module Transport_type : Asn1_intf.S)
 ; "Transited_encoding", (module Transited_encoding : Asn1_intf.S)
-; "Typed_datum", (module Typed_datum : Asn1_intf.S)
 ; "Typed_data", (module Typed_data : Asn1_intf.S)
 ; "Uint32", (module Uint32 : Asn1_intf.S)
 ]
