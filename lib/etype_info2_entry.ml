@@ -18,7 +18,7 @@ module Ast = struct
     (sequence3
        (tag_required 0 ~label:"etype" Krb_int32.Ast.asn)
        (tag_optional 1 ~label:"salt" Kerberos_string.Ast.asn)
-       (tag_optional 1 ~label:"s2kparams" Octet_string.Ast.asn))
+       (tag_optional 2 ~label:"s2kparams" Octet_string.Ast.asn))
 end
 
 let ast_of_t t =

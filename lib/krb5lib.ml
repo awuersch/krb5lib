@@ -23,6 +23,8 @@ module Msg = struct
 
   module Kerberos_time = Kerberos_time
 
+  module Ad_kdcissued = Ad_kdcissued
+
   module Address_type = Address_type
 
   module Ap_options = Ap_options
@@ -136,6 +138,8 @@ module Msg = struct
   module Typed_data = Typed_data
 
   module Typed_datum = Typed_datum
+
+  module Ad_and_or = Ad_and_or
 
   module Types = Types
 end

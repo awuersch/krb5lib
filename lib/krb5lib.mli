@@ -613,7 +613,7 @@ module Msg : sig
     type t =
       { padata_type : Pa_data_type.t
       ; padata_value : Octet_string.t
-      } [@@deriving sexp]
+      }
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Pa_data_type.Ast.t * Cstruct.t
@@ -1111,6 +1111,32 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Etype_info2_entry.Ast.t list
+  end
+
+  module Ad_kdcissued : sig
+    type t =
+      { ad_checksum : Checksum.t
+      ; i_realm : Realm.t option
+      ; i_sname : Principal_name.t option
+      ; elements : Authorization_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Checksum.Ast.t
+            * Realm.Ast.t option
+            * Principal_name.Ast.t option
+            * Authorization_data.Ast.t
+  end
+
+  module Ad_and_or : sig
+    type t =
+      { condition_count : Krb_int32.t
+      ; elements : Authorization_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_int32.Ast.t * Authorization_data.Ast.t
   end
 
   module Types : sig

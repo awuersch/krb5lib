@@ -1,5 +1,7 @@
 let all =
-[ "Address_type", (module Address_type : Asn1_intf.S)
+[ "Ad_and_or", (module Ad_and_or : Asn1_intf.S)
+; "Ad_kdcissued", (module Ad_kdcissued : Asn1_intf.S)
+; "Address_type", (module Address_type : Asn1_intf.S)
 ; "Ap_options", (module Ap_options : Asn1_intf.S)
 ; "Ap_req", (module Ap_req : Asn1_intf.S)
 ; "Ap_rep", (module Ap_rep : Asn1_intf.S)
