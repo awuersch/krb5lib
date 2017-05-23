@@ -135,6 +135,46 @@ module Msg : sig
   module Realm :
     Asn1_intf.S with type t = string and type Ast.t = string
 
+  (** Utility msg.  Principal name types.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-6.2> Section Principal Names
+  *)
+  module Name_type : sig
+    module M : sig
+      type t =
+      | Unknown
+      | Principal
+      | Srv_inst
+      | Srv_hst
+      | Srv_xhst
+      | Uid
+      | X500_principal
+      | Smtp_name
+      | Enterprise
+
+      val alist : (t * int * string) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+  end
+
+  (** Utility msg.  Principal name.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.2> Section Realm and PrincipalName
+  *)
+  module Principal_name : sig
+    type t =
+      { name_type : Name_type.t
+      ; name_string : Kerberos_string.t list
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Name_type.Ast.t * Kerberos_string.Ast.t list
+  end
+
   (** Utility msg.  Kerberos Time.
       ASN.1 GeneralizedTime with no fractional seconds
 
@@ -151,6 +191,32 @@ module Msg : sig
     ; second : int
     }
     include Asn1_intf.S with type t := t and type Ast.t = Ptime.t
+  end
+
+  (** Utility msg.  Address Type.
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.5> HostAddress and HostAddresses
+      @see <https://tools.ietf.org/html/rfc4120#section-7.5.3> Address Types.
+  *)
+  module Address_type : sig
+    module M : sig
+      type t =
+      | Ipv4
+      | Directional
+      | Chaos_net
+      | Xns
+      | Iso
+      | Decnet_phase_iv
+      | Apple_talk_ddp
+      | Net_bios
+      | Ipv6
+
+      val alist : (t * int * string) list
+    end
+
+    include Asn1_intf.S with
+          type t = M.t
+      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
   (** Utility msg.  Host Address.
@@ -179,16 +245,16 @@ module Msg : sig
   end
 
   (** Utility msg.  Authorization Data.
-    
       AuthorizationData is always used as an OPTIONAL field.
       It should not be empty.
 
-      There are four authorization element types:
+      Authorization element types:
         {ul
-        {- AD-IF-RELEVANT: ad-type = 1}
-        {- AD-KDCIssued: ad-type = 4}
-        {- AD-AND_OR: ad-type = 5}
-        {- AD-MANDATORY-FOR-KDC: ad-type = 8}}
+        {- AD-IF-RELEVANT: ad-type = 1, rfc4120}
+        {- AD-KDCIssued: ad-type = 4, rfc4120}
+        {- AD-AND_OR: ad-type = 5, rfc4120}
+        {- AD-MANDATORY-FOR-KDC: ad-type = 8, rfc4120}}
+        {- AD-ETYPE-NEGOTIATION: ad-type = 129, rfc4537}}
 
       @see <https://tools.ietf.org/html/rfc4120> RFC
       @see <https://tools.ietf.org/html/rfc4120#section-5.2.6> Section AuthorizationData
@@ -212,6 +278,44 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Datum.Ast.t list
+  end
+
+  (** Utility msg.  AD-AND-OR authorization data value.
+
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6> Section AuthorizationData
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6.3> Section AND-OR.
+  *)
+  module Ad_and_or : sig
+    type t =
+      { condition_count : Krb_int32.t
+      ; elements : Authorization_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_int32.Ast.t * Authorization_data.Ast.t
+  end
+
+  (** Utility msg.  AD-KDCIssued authorization data value.
+
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6> Section AuthorizationData
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.6.2> Section AD-KDC-ISSUED.
+  *)
+  module Ad_kdcissued : sig
+    type t =
+      { ad_checksum : Checksum.t
+      ; i_realm : Realm.t option
+      ; i_sname : Principal_name.t option
+      ; elements : Authorization_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Checksum.Ast.t
+            * Realm.Ast.t option
+            * Principal_name.Ast.t option
+            * Authorization_data.Ast.t
   end
 
   (** Utility msg.  Pre-authentication and Typed Data.
@@ -314,61 +418,6 @@ module Msg : sig
       and type Ast.t = Pa_data_type.Ast.t * Cstruct.t
   end
 
-  (** Application tag numbers, see {{:https://tools.ietf.org/html/rfc4120#section-5.10}rfc4120 Section 5.10. Application Tag Numbers} *)
-  module Application_tag : sig
-    type t =
-    [ `Ticket
-    | `Authenticator
-    | `Enc_ticket_part
-    | `As_req
-    | `As_rep
-    | `Tgs_req
-    | `Tgs_rep
-    | `Ap_req
-    | `Ap_rep
-    | `Reserved16
-    | `Reserved17
-    | `Krb_safe
-    | `Krb_priv
-    | `Krb_cred
-    | `Enc_as_rep_part
-    | `Enc_tgs_rep_part
-    | `Enc_ap_rep_part
-    | `Enc_krb_priv_part
-    | `Enc_krb_cred_part
-    | `Krb_error
-    ]
-
-    val int_of_t : t -> int
-    val t_of_int_exn : int -> t
-    val tag : t -> t Asn.t -> t Asn.t
-    val string_of_t : t -> string
-    val sexp_of_t : t -> Sexplib.Sexp.t
-    val t_of_sexp : Sexplib.Sexp.t -> t
-  end
-
-  (** Principal Name type, see {{:https://tools.ietf.org/html/rfc4120#section-6.2}rfc4120 Section 6.2. Principal Names} *)
-  module Name_type : sig
-    module M : sig
-      type t =
-      | Unknown
-      | Principal
-      | Srv_inst
-      | Srv_hst
-      | Srv_xhst
-      | Uid
-      | X500_principal
-      | Smtp_name
-      | Enterprise
-
-      val alist : (t * int * string) list
-    end
-
-    include Asn1_intf.S with
-          type t = M.t
-      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
-  end
-
   (** Encryption Type.
       @see <https://tools.ietf.org/html/rfc3961> RFC
       @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
@@ -422,6 +471,37 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
+  (** Utility msg.  Encryption Key.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.9> Section Cryptosystem-Related Types.
+  *)
+  module Encryption_key : sig
+    type t =
+      { keytype : Encryption_type.t
+      ; keyvalue : Octet_string.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Encryption_type.Ast.t * Octet_string.Ast.t
+  end
+
+  (** Utility msg.  Encrypted Data.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.9> Section Cryptosystem-Related Types.
+  *)
+  module Encrypted_data : sig
+    type t =
+      { etype : Encryption_type.t
+      ; kvno : Uint32.t option
+      ; cipher : Octet_string.t (* Decrypts to EncTicketPart *)
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Encryption_type.Ast.t * Uint32.Ast.t option * Cstruct.t
+  end
+
   (** Checksum type.
       @see <https://tools.ietf.org/html/rfc3961> RFC
       @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
@@ -460,26 +540,738 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
-  (** Address type, see {{:https://tools.ietf.org/html/rfc4120#section-7.5.3}rfc4120 Section 7.5.3 Principal Names} *)
-  module Address_type : sig
-    module M : sig
+  (** Utility msg.  Checksum.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.2.9> Section Cryptosystem-Related Types.
+  *)
+  module Checksum : sig
+    type t =
+      { cksumtype : Checksum_type.t
+      ; checksum : Octet_string.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Checksum_type.Ast.t * Octet_string.Ast.t
+  end
+
+  (** Utility msg.  Application tags.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.10> Section Application Tag Numbers
+  *)
+  module Application_tag : sig
+    type t =
+    [ `Ticket
+    | `Authenticator
+    | `Enc_ticket_part
+    | `As_req
+    | `As_rep
+    | `Tgs_req
+    | `Tgs_rep
+    | `Ap_req
+    | `Ap_rep
+    | `Reserved16
+    | `Reserved17
+    | `Krb_safe
+    | `Krb_priv
+    | `Krb_cred
+    | `Enc_as_rep_part
+    | `Enc_tgs_rep_part
+    | `Enc_ap_rep_part
+    | `Enc_krb_priv_part
+    | `Enc_krb_cred_part
+    | `Krb_error
+    ]
+
+    val int_of_t : t -> int
+    val t_of_int_exn : int -> t
+    val tag : t -> t Asn.t -> t Asn.t
+    val string_of_t : t -> string
+    val sexp_of_t : t -> Sexplib.Sexp.t
+    val t_of_sexp : Sexplib.Sexp.t -> t
+  end
+
+  (** Tickets msg.  Ticket Flags.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.3> Section Tickets.
+  *)
+  module Ticket_flags : sig
+    module Flags : sig
       type t =
-      | Ipv4
-      | Directional
-      | Chaos_net
-      | Xns
-      | Iso
-      | Decnet_phase_iv
-      | Apple_talk_ddp
-      | Net_bios
-      | Ipv6
+      | Reserved_0
+      | Forwardable
+      | Forwarded
+      | Proxiable
+      | Proxy
+      | May_postdate
+      | Postdated
+      | Invalid
+      | Renewable
+      | Initial
+      | Pre_authent
+      | Hw_authent
+      | Transited_policy_checked
+      | Ok_as_delegate
 
       val alist : (t * int * string) list
+      module Encoding_options : sig
+        val min_bits : int
+      end
     end
 
+    module FlagSet : Set.S
+
     include Asn1_intf.S with
-          type t = M.t
-      and type Ast.t = Krb_int32.Of_alist(M).Ast.t
+         type t = FlagSet.t
+     and type Ast.t = bool array
+  end
+
+  (** Tickets msg.  Transited Encoding.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.3> Section Tickets.
+  *)
+  module Transited_encoding : sig
+    type t =
+      { tr_type : Krb_int32.t
+      ; contents : Octet_string.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t
+  end
+
+  (** Tickets msg.  Ticket.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.3> Section Tickets.
+  *)
+  module Ticket : sig
+    type t =
+      { realm : Realm.t
+      ; sname : Principal_name.t
+      ; enc_part : Encrypted_data.t (* Decrypts to EncTicketPart *)
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Z.t * Realm.Ast.t * Principal_name.Ast.t * Encrypted_data.Ast.t
+  end
+
+  (** Tickets msg.  Encrypted Ticket Part.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.3> Section Tickets.
+  *)
+  module Enc_ticket_part : sig
+    type t =
+      { flags : Ticket_flags.t
+      ; key : Encryption_key.t
+      ; crealm : Realm.t
+      ; cname : Principal_name.t
+      ; transited : Transited_encoding.t
+      ; authtime : Kerberos_time.t
+      ; starttime : Kerberos_time.t option
+      ; endtime : Kerberos_time.t
+      ; renew_till : Kerberos_time.t option
+      ; caddr : Host_addresses.t
+      ; authorization_data : Authorization_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Ticket_flags.Ast.t
+            * (Encryption_key.Ast.t
+            * (Realm.Ast.t
+            * (Principal_name.Ast.t
+            * (Transited_encoding.Ast.t
+            * (Kerberos_time.Ast.t
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t
+            * (Kerberos_time.Ast.t option
+            (* Non-empty *)
+            * (Host_addresses.Ast.t option
+            (* Non-empty *)
+            *  Authorization_data.Ast.t option)))))))))
+  end
+
+  (** AS and TGS Exchanges.  KDC Options.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.1> Section KRB_KDC_REQ Definition.
+  *)
+  module Kdc_options : sig
+    module Flags : sig
+      type t =
+      | Reserved_0
+      | Forwardable
+      | Forwarded
+      | Proxiable
+      | Proxy
+      | Allow_postdate
+      | Postdated
+      | Unused7
+      | Renewable
+      | Unused9
+      | Unused10
+      | Opt_hardware_auth
+      | Unused12
+      | Unused13
+      | Unused15
+      | Disable_transited_check
+      | Renewable_ok
+      | Ext_ticket_in_skey
+      | Renew
+      | Validate
+
+      val alist : (t * int * string) list
+      module Encoding_options : sig
+        val min_bits : int
+      end
+    end
+
+    module FlagSet : Set.S
+
+    include Asn1_intf.S with
+         type t = FlagSet.t
+     and type Ast.t = bool array
+  end
+
+  (** AS and TGS Exchanges.  KDC-REQ body.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.1> Section KRB_KDC_REQ Definition.
+  *)
+  module Kdc_req_body : sig
+    (* CR bbohrer: Encode invariant that cname is only used for as-req *)
+    type t =
+      { kdc_options : Kdc_options.t
+      ; cname : Principal_name.t option (* Used only in As-req *)
+      ; realm : Realm.t
+      ; sname : Principal_name.t option
+      ; from : Kerberos_time.t option
+      ; till : Kerberos_time.t
+      ; rtime : Kerberos_time.t option
+      ; nonce : Uint32.t
+      ; etype : Encryption_type.t list (* In preference order*)
+      ; addresses : Host_addresses.t option
+      ; enc_authorization_data : Encrypted_data.t option
+      ; additional_tickets :  Ticket.t list
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Kdc_options.Ast.t
+            * (Principal_name.Ast.t option (* Used only in As-req *)
+            * (Realm.Ast.t
+            * (Principal_name.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t
+            * (Kerberos_time.Ast.t option
+            * (Uint32.Ast.t
+            * (Encryption_type.Ast.t list (* In preference order*)
+            * (Host_addresses.Ast.t option
+            * (Encrypted_data.Ast.t option
+            *  Ticket.Ast.t list option))))))))))
+  end
+
+  (** AS and TGS Exchanges.  KDC-REQ.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.1> Section KRB_KDC_REQ Definition.
+  *)
+  module Kdc_req : sig
+    type t =
+      { padata : Pa_data.t list
+      ; req_body : Kdc_req_body.t
+      }
+    module Ast : sig
+      type t =
+          Z.t
+        * Z.t
+        * Pa_data.Ast.t list option
+        * Kdc_req_body.Ast.t
+      val asn : t Asn.t
+    end
+    val app_ast_of_t : Application_tag.t -> t -> Ast.t
+    val t_of_ast : Ast.t -> t
+    val sexp_of_t : t -> Sexplib.Sexp.t
+    val t_of_sexp : Sexplib.Sexp.t -> t
+  end
+
+  (** AS and TGS Exchanges.  AS-REQ.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.1> Section The Authentication Service Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.1> Section KRB_KDC_REQ Definition.
+  *)
+  module As_req : sig
+    type t = Kdc_req.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Kdc_req.Ast.t
+  end
+
+  (** AS and TGS Exchanges.  TGS-REQ.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.3> The Ticket-Granting Service (TGS) Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.1> Section KRB_KDC_REQ Definition.
+  *)
+  module Tgs_req : sig
+    type t = Kdc_req.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Kdc_req.Ast.t
+  end
+
+  (** AS and TGS Exchanges.  KDC-REP.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.2> Section KRB_KDC_REP Definition.
+  *)
+  module Kdc_rep : sig
+    type t =
+      { padata   : Pa_data.t list
+      ; crealm   : Realm.t
+      ; cname    : Principal_name.t
+      ; ticket   : Ticket.t
+      ; enc_part : Encrypted_data.t
+      }
+    module Ast : sig
+      type t =
+          Z.t (* pvno - 5 *)
+        * (Z.t (* msg_type *)
+        * (Pa_data.Ast.t list option (* Non-empty *)
+        * (Realm.Ast.t
+        * (Principal_name.Ast.t
+        * (Ticket.Ast.t
+        *  Encrypted_data.Ast.t)))))
+      val asn : t Asn.t
+    end
+    val app_ast_of_t : Application_tag.t -> t -> Ast.t
+    val t_of_ast : Ast.t -> t
+    val sexp_of_t : t -> Sexplib.Sexp.t
+    val t_of_sexp : Sexplib.Sexp.t -> t
+  end
+
+  (** AS and TGS Exchanges.  AS-REP.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.1> Section The Authentication Service Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.2> Section KRB_KDC_REP Definition.
+  *)
+  module As_rep : sig
+    type t = Kdc_rep.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Kdc_rep.Ast.t
+  end
+
+  (** AS and TGS Exchanges.  TGS-REP.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.3> The Ticket-Granting Service (TGS) Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.2> Section KRB_KDC_REP Definition.
+  *)
+  module Tgs_rep : sig
+    type t = Kdc_rep.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Kdc_rep.Ast.t
+  end
+
+  (** AS and TGS Exchanges.  LastReq.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.1> Section The Authentication Service Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.2> Section KRB_KDC_REP Definition.
+  *)
+  module Last_req : sig
+    module Datum : sig
+      type t =
+        { lr_type : Krb_int32.t
+        ; lr_value : Kerberos_time.t
+        }
+      include Asn1_intf.S with
+            type t := t
+        and type Ast.t = Krb_int32.Ast.t * Kerberos_time.Ast.t
+    end
+
+    type t = Datum.t list
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Datum.Ast.t list
+  end
+
+  (** AS and TGS Exchanges.  EncKDCRepPart.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.1> Section The Authentication Service Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.2> Section KRB_KDC_REP Definition.
+  *)
+  module Enc_kdc_rep_part : sig
+    type t =
+      { key : Encryption_key.t
+      ; last_req : Last_req.t
+      ; nonce : Uint32.t
+      ; key_expiration : Kerberos_time.t option
+      ; flags : Ticket_flags.t
+      ; authtime : Kerberos_time.t
+      ; starttime : Kerberos_time.t option
+      ; endtime : Kerberos_time.t
+      ; renew_till : Kerberos_time.t option
+      ; srealm : Realm.t
+      ; sname : Principal_name.t
+      ; caddr : Host_addresses.t
+      }
+    module Ast : sig
+      type t =
+        Encryption_key.Ast.t
+        * (Last_req.Ast.t
+        * (Uint32.Ast.t
+        * (Kerberos_time.Ast.t option
+        * (Ticket_flags.Ast.t
+        * (Kerberos_time.Ast.t
+        * (Kerberos_time.Ast.t option
+        * (Kerberos_time.Ast.t
+        * (Kerberos_time.Ast.t option
+        * (Realm.Ast.t
+        * (Principal_name.Ast.t
+        * Host_addresses.Ast.t option))))))))))
+ 
+      val app_asn : Application_tag.t -> t Asn.t
+    end
+    val ast_of_t : t -> Ast.t
+    val t_of_ast : Ast.t -> t
+    val sexp_of_t : t -> Sexplib.Sexp.t
+    val t_of_sexp : Sexplib.Sexp.t -> t
+  end
+
+  (** AS and TGS Exchanges.  EncAsRepPart.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.1> Section The Authentication Service Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.2> Section KRB_KDC_REP Definition.
+  *)
+  module Enc_as_rep_part : sig
+    type t = Enc_kdc_rep_part.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Enc_kdc_rep_part.Ast.t
+  end
+
+  (** AS and TGS Exchanges.  EncTgsRepPart.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.1> Section The Authentication Service Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.4.2> Section KRB_KDC_REP Definition.
+  *)
+  module Enc_tgs_rep_part : sig
+    type t = Enc_kdc_rep_part.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Enc_kdc_rep_part.Ast.t
+  end
+
+  (** Client/Server (CS) Message Specifications. APOptions.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.2> Section The Client/Server Authentication Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.5.1> Section KRB_AP_REQ Definition.
+  *)
+  module Ap_options : sig
+    module Flags : sig
+      type t =
+      | Reserved_0
+      | Use_session_key
+      | Mutual_required
+
+      val alist : (t * int * string) list
+      module Encoding_options : sig
+        val min_bits : int
+      end
+    end
+
+    module FlagSet : Set.S
+
+    include Asn1_intf.S with
+         type t = FlagSet.t
+     and type Ast.t = bool array
+  end
+
+  (** Client/Server (CS) Message Specifications. Authenticator.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.2> Section The Client/Server Authentication Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.5.1> Section KRB_AP_REQ Definition.
+  *)
+  module Authenticator : sig
+    type t =
+      { crealm : Realm.t
+      ; cname : Principal_name.t
+      ; cksum : Checksum.t option
+      ; cusec : Microseconds.t
+      ; ctime : Kerberos_time.t
+      ; subkey : Encryption_key.t option
+      ; seq_number : Uint32.t option
+      ; authorization_data : Authorization_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Z.t
+            * (Realm.Ast.t
+            * (Principal_name.Ast.t
+            * (Checksum.Ast.t option
+            * (Microseconds.Ast.t
+            * (Kerberos_time.Ast.t
+            * (Encryption_key.Ast.t option
+            * (Uint32.Ast.t option
+            *  Authorization_data.Ast.t option)))))))
+  end
+
+  (** Client/Server (CS) Message Specifications. AP-REQ
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.2> Section The Client/Server Authentication Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.5.1> Section KRB_AP_REQ Definition.
+  *)
+  module Ap_req : sig
+    type t =
+      { ap_options : Ap_options.t
+      ; ticket : Ticket.t
+      ; authenticator : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Z.t * Z.t * Ap_options.Ast.t * Ticket.Ast.t * Encrypted_data.Ast.t
+  end
+
+  (** Client/Server (CS) Message Specifications. AP-REP
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.2> Section The Client/Server Authentication Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.5.2> Section KRB_AP_REP Definition.
+  *)
+  module Ap_rep : sig
+    type t =
+      { enc_part : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Encrypted_data.Ast.t
+  end
+
+  (** Client/Server (CS) Message Specifications. EncAPRepPart.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.2> Section The Client/Server Authentication Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.5.2> Section KRB_AP_REP Definition.
+  *)
+  module Enc_ap_rep_part : sig
+    type t =
+      { ctime : Kerberos_time.t
+      ; cusec : Microseconds.t
+      ; subkey : Encryption_key.t option (** @see <https://tools.ietf.org/html/rfc4120#section-3.2.6> Using the Encryption Key. *)
+      ; seq_number : Uint32.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Kerberos_time.Ast.t
+            * Microseconds.Ast.t
+            * Encryption_key.Ast.t option
+            * Uint32.Ast.t option
+  end
+
+  (** KRB_SAFE Message Specification.  KRB-SAFE-BODY.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.4> The KRB_SAFE Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.6.1> Section KRB_SAFE Definition.
+  *)
+  module Krb_safe_body : sig
+    type t =
+      { user_data : Octet_string.t
+      ; timestamp : Kerberos_time.t option
+      ; usec : Microseconds.t option
+      ; seq_number : Uint32.t option
+      ; s_address : Host_address.t
+      ; r_address : Host_address.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Octet_string.Ast.t
+            * (Kerberos_time.Ast.t option
+            * (Microseconds.Ast.t option
+            * (Uint32.Ast.t option
+            * (Host_address.Ast.t
+            *  Host_address.Ast.t option))))
+  end
+
+  (** KRB_SAFE Message Specification.  KRB-SAFE.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.4> The KRB_SAFE Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.6.1> Section KRB_SAFE Definition.
+  *)
+  module Krb_safe : sig
+    type t =
+      { safe_body : Krb_safe_body.t
+      ; cksum : Checksum.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Krb_safe_body.Ast.t * Checksum.Ast.t
+  end
+
+  (** KRB_PRIV Message Specification.  KRB-PRIV.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.5> The KRB_PRIV Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.7.1> Section KRB_PRIV Definition.
+  *)
+  module Krb_priv : sig
+    type t =
+      { enc_part : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Encrypted_data.Ast.t
+  end
+
+  (** KRB_PRIV Message Specification.  EncKrbPrivPart.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.5> The KRB_PRIV Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.7.1> Section KRB_PRIV Definition.
+  *)
+  module Enc_krb_priv_part : sig
+    type t = Krb_safe_body.t
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Krb_safe_body.Ast.t
+  end
+
+  (** KRB_CRED Message Specification.  KRB-CRED.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.6> The KRB_CRED Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.8.1> KRB_CRED Definition.
+  *)
+  module Krb_cred : sig
+    type t =
+      { tickets : Ticket.t list
+      ; enc_part : Encrypted_data.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Z.t * Z.t * Ticket.Ast.t list * Encrypted_data.Ast.t
+  end
+
+  (** KRB_CRED Message Specification.  KrbCredInfo.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.6> The KRB_CRED Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.8.1> KRB_CRED Definition.
+  *)
+  module Krb_cred_info : sig
+    type t =
+      { key : Encryption_key.t
+      ; prealm : Realm.t option
+      ; pname : Principal_name.t option
+      ; flags : Ticket_flags.t option
+      ; authtime : Kerberos_time.t option
+      ; starttime : Kerberos_time.t option
+      ; endtime : Kerberos_time.t option
+      ; renew_till : Kerberos_time.t option
+      ; srealm : Realm.t option
+      ; sname : Principal_name.t option
+      ; caddr : Host_addresses.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Encryption_key.Ast.t
+            * (Realm.Ast.t option
+            * (Principal_name.Ast.t option
+            * (Ticket_flags.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Realm.Ast.t option
+            * (Principal_name.Ast.t option
+            *  Host_addresses.Ast.t option)))))))))
+  end
+
+  (** KRB_CRED Message Specification.  EncKrbCredPart.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-3.6> The KRB_CRED Exchange.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.8.1> KRB_CRED Definition.
+  *)
+  module Enc_krb_cred_part : sig
+    type t =
+      { ticket_info : Krb_cred_info.t list
+      ; nonce : Uint32.t option
+      ; timestamp : Kerberos_time.t option
+      ; usec : Microseconds.t option
+      ; s_address : Host_address.t option
+      ; r_address : Host_address.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+            Krb_cred_info.Ast.t list
+            * (Uint32.Ast.t option
+            * (Kerberos_time.Ast.t option
+            * (Microseconds.Ast.t option
+            * (Host_address.Ast.t option
+            *  Host_address.Ast.t option))))
+  end
+
+  (** Error Message Specification.  KRB-ERROR.
+    
+      @see <https://tools.ietf.org/html/rfc4120> RFC
+      @see <https://tools.ietf.org/html/rfc4120#section-5.5.3> Error Message Reply.
+      @see <https://tools.ietf.org/html/rfc4120#section-5.9.1> KRB_ERROR Definition.
+  *)
+  module Krb_error : sig
+    type t =
+      { ctime      : Kerberos_time.t option
+      ; cusec      : Microseconds.t option
+      ; stime      : Kerberos_time.t
+      ; susec      : Microseconds.t
+      ; error_code : Krb_int32.t
+      ; crealm     : Realm.t option
+      ; cname      : Principal_name.t option
+      ; realm      : Realm.t
+      ; sname      : Principal_name.t
+      ; e_text     : Kerberos_string.t option
+      ; e_data     : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Z.t (* pvno - 5 *)
+            * (Z.t (* msg_type *)
+            * (Kerberos_time.Ast.t option
+            * (Microseconds.Ast.t option
+            * (Kerberos_time.Ast.t
+            * (Microseconds.Ast.t
+            * (Krb_int32.Ast.t
+            * (Realm.Ast.t option
+            * (Principal_name.Ast.t option
+            * (Realm.Ast.t
+            * (Principal_name.Ast.t
+            * (Kerberos_string.Ast.t option
+            *  Octet_string.Ast.t option)))))))))))
   end
 
   (** TCP Extensions.
@@ -541,94 +1333,6 @@ module Msg : sig
       and type Ast.t = Krb_int32.Of_alist(M).Ast.t
   end
 
-  module Ticket_flags : sig
-    module Flags : sig
-      type t =
-      | Reserved_0
-      | Forwardable
-      | Forwarded
-      | Proxiable
-      | Proxy
-      | May_postdate
-      | Postdated
-      | Invalid
-      | Renewable
-      | Initial
-      | Pre_authent
-      | Hw_authent
-      | Transited_policy_checked
-      | Ok_as_delegate
-
-      val alist : (t * int * string) list
-      module Encoding_options : sig
-        val min_bits : int
-      end
-    end
-
-    module FlagSet : Set.S
-
-    include Asn1_intf.S with
-         type t = FlagSet.t
-     and type Ast.t = bool array
-  end
-
-  module Ap_options : sig
-    module Flags : sig
-      type t =
-      | Reserved_0
-      | Use_session_key
-      | Mutual_required
-
-      val alist : (t * int * string) list
-      module Encoding_options : sig
-        val min_bits : int
-      end
-    end
-
-    module FlagSet : Set.S
-
-    include Asn1_intf.S with
-         type t = FlagSet.t
-     and type Ast.t = bool array
-  end
-
-  module Kdc_options : sig
-    module Flags : sig
-      type t =
-      | Reserved_0
-      | Forwardable
-      | Forwarded
-      | Proxiable
-      | Proxy
-      | Allow_postdate
-      | Postdated
-      | Unused7
-      | Renewable
-      | Unused9
-      | Unused10
-      | Opt_hardware_auth
-      | Unused12
-      | Unused13
-      | Unused15
-      | Disable_transited_check
-      | Renewable_ok
-      | Ext_ticket_in_skey
-      | Renew
-      | Validate
-
-      val alist : (t * int * string) list
-      module Encoding_options : sig
-        val min_bits : int
-      end
-    end
-
-    module FlagSet : Set.S
-
-    include Asn1_intf.S with
-         type t = FlagSet.t
-     and type Ast.t = bool array
-  end
-
   (** FAST Options.
       @see <https://tools.ietf.org/html/rfc6113> RFC
       @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
@@ -652,478 +1356,6 @@ module Msg : sig
     include Asn1_intf.S with
          type t = FlagSet.t
      and type Ast.t = bool array
-  end
-
-  module Principal_name : sig
-    type t =
-      { name_type : Name_type.t
-      ; name_string : Kerberos_string.t list
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Name_type.Ast.t * Kerberos_string.Ast.t list
-  end
-
-  module Checksum : sig
-    type t =
-      { cksumtype : Checksum_type.t
-      ; checksum : Octet_string.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Checksum_type.Ast.t * Octet_string.Ast.t
-  end
-
-  module Encrypted_data : sig
-    type t =
-      { etype : Encryption_type.t
-      ; kvno : Uint32.t option
-      ; cipher : Octet_string.t (* Decrypts to EncTicketPart *)
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Encryption_type.Ast.t * Uint32.Ast.t option * Cstruct.t
-  end
-
-  module Encryption_key : sig
-    type t =
-      { keytype : Encryption_type.t
-      ; keyvalue : Octet_string.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Encryption_type.Ast.t * Octet_string.Ast.t
-  end
-
-  module Transited_encoding : sig
-    type t =
-      { tr_type : Krb_int32.t
-      ; contents : Octet_string.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Krb_int32.Ast.t * Octet_string.Ast.t
-  end
-
-  (** Last req, see {{:https://tools.ietf.org/html/rfc4120#section-5.4.2}rfc4120 Section 5.4.2 KRB_KDC_REP Definition} *)
-  module Last_req_inst : sig
-    type t =
-      { lr_type : Krb_int32.t
-      ; lr_value : Kerberos_time.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Krb_int32.Ast.t * Kerberos_time.Ast.t
-  end
-
-  (** Last req, see {{:https://tools.ietf.org/html/rfc4120#section-5.4.2}rfc4120 Section 5.4.2 KRB_KDC_REP Definition} *)
-  module Last_req : sig
-    type t = Last_req_inst.t list
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Last_req_inst.Ast.t list
-  end
-
-  module Enc_ticket_part : sig
-    type t =
-      { flags : Ticket_flags.t
-      ; key : Encryption_key.t
-      ; crealm : Realm.t
-      ; cname : Principal_name.t
-      ; transited : Transited_encoding.t
-      ; authtime : Kerberos_time.t
-      ; starttime : Kerberos_time.t option
-      ; endtime : Kerberos_time.t
-      ; renew_till : Kerberos_time.t option
-      ; caddr : Host_addresses.t
-      ; authorization_data : Authorization_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-            Ticket_flags.Ast.t
-            * (Encryption_key.Ast.t
-            * (Realm.Ast.t
-            * (Principal_name.Ast.t
-            * (Transited_encoding.Ast.t
-            * (Kerberos_time.Ast.t
-            * (Kerberos_time.Ast.t option
-            * (Kerberos_time.Ast.t
-            * (Kerberos_time.Ast.t option
-            (* Non-empty *)
-            * (Host_addresses.Ast.t option
-            (* Non-empty *)
-            *  Authorization_data.Ast.t option)))))))))
-  end
-
-  module Enc_kdc_rep_part : sig
-    type t =
-      { key : Encryption_key.t
-      ; last_req : Last_req.t
-      ; nonce : Uint32.t
-      ; key_expiration : Kerberos_time.t option
-      ; flags : Ticket_flags.t
-      ; authtime : Kerberos_time.t
-      ; starttime : Kerberos_time.t option
-      ; endtime : Kerberos_time.t
-      ; renew_till : Kerberos_time.t option
-      ; srealm : Realm.t
-      ; sname : Principal_name.t
-      ; caddr : Host_addresses.t
-      }
-    module Ast : sig
-      type t =
-        Encryption_key.Ast.t
-        * (Last_req.Ast.t
-        * (Uint32.Ast.t
-        * (Kerberos_time.Ast.t option
-        * (Ticket_flags.Ast.t
-        * (Kerberos_time.Ast.t
-        * (Kerberos_time.Ast.t option
-        * (Kerberos_time.Ast.t
-        * (Kerberos_time.Ast.t option
-        * (Realm.Ast.t
-        * (Principal_name.Ast.t
-        * Host_addresses.Ast.t option))))))))))
- 
-      val app_asn : Application_tag.t -> t Asn.t
-    end
-    val ast_of_t : t -> Ast.t
-    val t_of_ast : Ast.t -> t
-    val sexp_of_t : t -> Sexplib.Sexp.t
-    val t_of_sexp : Sexplib.Sexp.t -> t
-  end
-
-  module Enc_as_rep_part : sig
-    type t = Enc_kdc_rep_part.t
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Enc_kdc_rep_part.Ast.t
-  end
-
-  module Enc_tgs_rep_part : sig
-    type t = Enc_kdc_rep_part.t
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Enc_kdc_rep_part.Ast.t
-  end
-
-  module Ticket : sig
-    type t =
-      { realm : Realm.t
-      ; sname : Principal_name.t
-      ; enc_part : Encrypted_data.t (* Decrypts to EncTicketPart *)
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-            Z.t * Realm.Ast.t * Principal_name.Ast.t * Encrypted_data.Ast.t
-  end
-
-  module Kdc_req_body : sig
-    (* CR bbohrer: Encode invariant that cname is only used for as-req *)
-    type t =
-      { kdc_options : Kdc_options.t
-      ; cname : Principal_name.t option (* Used only in As-req *)
-      ; realm : Realm.t
-      ; sname : Principal_name.t option
-      ; from : Kerberos_time.t option
-      ; till : Kerberos_time.t
-      ; rtime : Kerberos_time.t option
-      ; nonce : Uint32.t
-      ; etype : Encryption_type.t list (* In preference order*)
-      ; addresses : Host_addresses.t option
-      ; enc_authorization_data : Encrypted_data.t option
-      ; additional_tickets :  Ticket.t list
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-              Kdc_options.Ast.t
-            * (Principal_name.Ast.t option (* Used only in As-req *)
-            * (Realm.Ast.t
-            * (Principal_name.Ast.t option
-            * (Kerberos_time.Ast.t option
-            * (Kerberos_time.Ast.t
-            * (Kerberos_time.Ast.t option
-            * (Uint32.Ast.t
-            * (Encryption_type.Ast.t list (* In preference order*)
-            * (Host_addresses.Ast.t option
-            * (Encrypted_data.Ast.t option
-            *  Ticket.Ast.t list option))))))))))
-  end
-
-  module Ap_req : sig
-    type t =
-      { ap_options : Ap_options.t
-      ; ticket : Ticket.t
-      ; authenticator : Encrypted_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-            Z.t * Z.t * Ap_options.Ast.t * Ticket.Ast.t * Encrypted_data.Ast.t
-  end
-
-  module Authenticator : sig
-    type t =
-      { crealm : Realm.t
-      ; cname : Principal_name.t
-      ; cksum : Checksum.t option
-      ; cusec : Microseconds.t
-      ; ctime : Kerberos_time.t
-      ; subkey : Encryption_key.t option
-      ; seq_number : Uint32.t option
-      ; authorization_data : Authorization_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-              Z.t
-            * (Realm.Ast.t
-            * (Principal_name.Ast.t
-            * (Checksum.Ast.t option
-            * (Microseconds.Ast.t
-            * (Kerberos_time.Ast.t
-            * (Encryption_key.Ast.t option
-            * (Uint32.Ast.t option
-            *  Authorization_data.Ast.t option)))))))
-  end
-
-  module Enc_ap_rep_part : sig
-    type t =
-      { ctime : Kerberos_time.t
-      ; cusec : Microseconds.t
-      ; subkey : Encryption_key.t option
-      ; seq_number : Uint32.t option
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-              Kerberos_time.Ast.t
-            * Microseconds.Ast.t
-            * Encryption_key.Ast.t option
-            * Uint32.Ast.t option
-  end
-
-  module Ap_rep : sig
-    type t =
-      { enc_part : Encrypted_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Z.t * Z.t * Encrypted_data.Ast.t
-  end
-
-  module Kdc_rep : sig
-    type t =
-      { padata   : Pa_data.t list
-      ; crealm   : Realm.t
-      ; cname    : Principal_name.t
-      ; ticket   : Ticket.t
-      ; enc_part : Encrypted_data.t
-      }
-    module Ast : sig
-      type t =
-          Z.t (* pvno - 5 *)
-        * (Z.t (* msg_type *)
-        * (Pa_data.Ast.t list option (* Non-empty *)
-        * (Realm.Ast.t
-        * (Principal_name.Ast.t
-        * (Ticket.Ast.t
-        *  Encrypted_data.Ast.t)))))
-      val asn : t Asn.t
-    end
-    val app_ast_of_t : Application_tag.t -> t -> Ast.t
-    val t_of_ast : Ast.t -> t
-    val sexp_of_t : t -> Sexplib.Sexp.t
-    val t_of_sexp : Sexplib.Sexp.t -> t
-  end
-
-  module Kdc_req : sig
-    type t =
-      { padata : Pa_data.t list
-      ; req_body : Kdc_req_body.t
-      }
-    module Ast : sig
-      type t =
-          Z.t
-        * Z.t
-        * Pa_data.Ast.t list option
-        * Kdc_req_body.Ast.t
-      val asn : t Asn.t
-    end
-    val app_ast_of_t : Application_tag.t -> t -> Ast.t
-    val t_of_ast : Ast.t -> t
-    val sexp_of_t : t -> Sexplib.Sexp.t
-    val t_of_sexp : Sexplib.Sexp.t -> t
-  end
-
-  module As_rep : sig
-    type t = Kdc_rep.t
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Kdc_rep.Ast.t
-  end
-
-  module As_req : sig
-    type t = Kdc_req.t
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Kdc_req.Ast.t
-  end
-
-  module Tgs_rep : sig
-    type t = Kdc_rep.t
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Kdc_rep.Ast.t
-  end
-
-  module Tgs_req : sig
-    type t = Kdc_req.t
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Kdc_req.Ast.t
-  end
-
-  module Krb_safe_body : sig
-    type t =
-      { user_data : Octet_string.t
-      ; timestamp : Kerberos_time.t option
-      ; usec : Microseconds.t option
-      ; seq_number : Uint32.t option
-      ; s_address : Host_address.t
-      ; r_address : Host_address.t option
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-            Octet_string.Ast.t
-            * (Kerberos_time.Ast.t option
-            * (Microseconds.Ast.t option
-            * (Uint32.Ast.t option
-            * (Host_address.Ast.t
-            *  Host_address.Ast.t option))))
-  end
-
-  module Krb_safe : sig
-    type t =
-      { safe_body : Krb_safe_body.t
-      ; cksum : Checksum.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Z.t * Z.t * Krb_safe_body.Ast.t * Checksum.Ast.t
-  end
-
-  module Krb_priv : sig
-    type t =
-      { enc_part : Encrypted_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Z.t * Z.t * Encrypted_data.Ast.t
-  end
-
-  (** structurally same except for application tag *)
-  module Enc_krb_priv_part : sig
-    type t = Krb_safe_body.t
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Krb_safe_body.Ast.t
-  end
-
-  module Krb_cred : sig
-    type t =
-      { tickets : Ticket.t list
-      ; enc_part : Encrypted_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Z.t * Z.t * Ticket.Ast.t list * Encrypted_data.Ast.t
-  end
-
-  module Krb_cred_info : sig
-    type t =
-      { key : Encryption_key.t
-      ; prealm : Realm.t option
-      ; pname : Principal_name.t option
-      ; flags : Ticket_flags.t option
-      ; authtime : Kerberos_time.t option
-      ; starttime : Kerberos_time.t option
-      ; endtime : Kerberos_time.t option
-      ; renew_till : Kerberos_time.t option
-      ; srealm : Realm.t option
-      ; sname : Principal_name.t option
-      ; caddr : Host_addresses.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-            Encryption_key.Ast.t
-            * (Realm.Ast.t option
-            * (Principal_name.Ast.t option
-            * (Ticket_flags.Ast.t option
-            * (Kerberos_time.Ast.t option
-            * (Kerberos_time.Ast.t option
-            * (Kerberos_time.Ast.t option
-            * (Kerberos_time.Ast.t option
-            * (Realm.Ast.t option
-            * (Principal_name.Ast.t option
-            *  Host_addresses.Ast.t option)))))))))
-  end
-
-  module Enc_krb_cred_part : sig
-    type t =
-      { ticket_info : Krb_cred_info.t list
-      ; nonce : Uint32.t option
-      ; timestamp : Kerberos_time.t option
-      ; usec : Microseconds.t option
-      ; s_address : Host_address.t option
-      ; r_address : Host_address.t option
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-            Krb_cred_info.Ast.t list
-            * (Uint32.Ast.t option
-            * (Kerberos_time.Ast.t option
-            * (Microseconds.Ast.t option
-            * (Host_address.Ast.t option
-            *  Host_address.Ast.t option))))
-  end
-
-  module Krb_error : sig
-    type t =
-      { ctime      : Kerberos_time.t option
-      ; cusec      : Microseconds.t option
-      ; stime      : Kerberos_time.t
-      ; susec      : Microseconds.t
-      ; error_code : Krb_int32.t
-      ; crealm     : Realm.t option
-      ; cname      : Principal_name.t option
-      ; realm      : Realm.t
-      ; sname      : Principal_name.t
-      ; e_text     : Kerberos_string.t option
-      ; e_data     : Octet_string.t option
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-              Z.t (* pvno - 5 *)
-            * (Z.t (* msg_type *)
-            * (Kerberos_time.Ast.t option
-            * (Microseconds.Ast.t option
-            * (Kerberos_time.Ast.t
-            * (Microseconds.Ast.t
-            * (Krb_int32.Ast.t
-            * (Realm.Ast.t option
-            * (Principal_name.Ast.t option
-            * (Realm.Ast.t
-            * (Principal_name.Ast.t
-            * (Kerberos_string.Ast.t option
-            *  Octet_string.Ast.t option)))))))))))
   end
 
   module Method_data : sig
@@ -1196,32 +1428,6 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Etype_info2_entry.Ast.t list
-  end
-
-  module Ad_kdcissued : sig
-    type t =
-      { ad_checksum : Checksum.t
-      ; i_realm : Realm.t option
-      ; i_sname : Principal_name.t option
-      ; elements : Authorization_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t =
-              Checksum.Ast.t
-            * Realm.Ast.t option
-            * Principal_name.Ast.t option
-            * Authorization_data.Ast.t
-  end
-
-  module Ad_and_or : sig
-    type t =
-      { condition_count : Krb_int32.t
-      ; elements : Authorization_data.t
-      }
-    include Asn1_intf.S with
-          type t := t
-      and type Ast.t = Krb_int32.Ast.t * Authorization_data.Ast.t
   end
 
   module Types : sig

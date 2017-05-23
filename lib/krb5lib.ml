@@ -107,8 +107,6 @@ module Msg = struct
 
   module Krb_safe = Krb_safe
 
-  module Last_req_inst = Last_req_inst
-
   module Last_req = Last_req
 
   module Method_data = Method_data

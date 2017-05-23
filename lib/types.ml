@@ -41,7 +41,6 @@ let all =
 ; "Krb_priv", (module Krb_priv : Asn1_intf.S)
 ; "Krb_safe_body", (module Krb_safe_body : Asn1_intf.S)
 ; "Krb_safe", (module Krb_safe : Asn1_intf.S)
-; "Last_req_inst", (module Last_req_inst : Asn1_intf.S)
 ; "Last_req", (module Last_req : Asn1_intf.S)
 ; "Method_data", (module Method_data : Asn1_intf.S)
 ; "Name_type", (module Name_type : Asn1_intf.S)
