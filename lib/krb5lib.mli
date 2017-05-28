@@ -10,11 +10,18 @@ open Asn
     Embeds
     {b References}
     {ul
-    {  {{:https;//tools.ietf.org/html/rfc4120#appendixA}The
+    {- rfc4120 Appendix A. {{:https://tools.ietf.org/html/rfc4120#appendixA} The
          Kerberos Authentication Service (V5)}, Appendex A. ASN.1 module}
-    {  {{:https;//tools.ietf.org/html/rfc4120}The
+    {- rfc4120. {{:https://tools.ietf.org/html/rfc4120} The
          Kerberos Authentication Service (V5)}}
-    {}
+    {- rfc4537.  {{:https://tools.ietf.org/html/rfc4537} Kerberos
+         Cryptosystem Negotiation Extension}}
+    {- rfc5021.  {{:https://tools.ietf.org/html/rfc5021} Extended Kerberos
+         Version 5 Key Distribution Center (KDC) Exchanges over TCP}}
+    {- rfc5896  {{:https://tools.ietf.org/html/rfc5896} Generic Security Service
+         Application Program Interface (GSS-API):
+         Delegate if Approved by Policy}}
+    }
     
     {e %%VERSION%% — {{:%%PKG_HOMEPAGE%% }homepage}} *)
 
@@ -30,7 +37,7 @@ module Msg : sig
       (** a primitive or record representation *)
       type t
   
-      (** Abstract syntax tree, typed per asn1-combinators *)
+      (** an abstract syntax tree, typed per asn1-combinators *)
       module Ast : sig
 
         (** A primitive, tuple, nested pair, or list.
@@ -250,11 +257,11 @@ module Msg : sig
 
       Authorization element types:
         {ul
-        {- AD-IF-RELEVANT: ad-type = 1, rfc4120}
-        {- AD-KDCIssued: ad-type = 4, rfc4120}
-        {- AD-AND_OR: ad-type = 5, rfc4120}
-        {- AD-MANDATORY-FOR-KDC: ad-type = 8, rfc4120}}
-        {- AD-ETYPE-NEGOTIATION: ad-type = 129, rfc4537}}
+        {- AD_IF_RELEVANT. ad-type = 1, rfc4120}
+        {- AD_KDCIssued. ad-type = 4, rfc4120}
+        {- AD_AND_OR. ad-type = 5, rfc4120}
+        {- AD_MANDATORY_FOR_KDC. ad-type = 8, rfc4120}
+        {- AD_ETYPE_NEGOTIATION. ad-type = 129, rfc4537}}
 
       @see <https://tools.ietf.org/html/rfc4120> RFC
       @see <https://tools.ietf.org/html/rfc4120#section-5.2.6> Section AuthorizationData
@@ -329,71 +336,79 @@ module Msg : sig
   *)
   module Pa_data_type : sig
     module M : sig
+
+      (**
+        {b References}
+        {ul
+          {- IETF. {{:https://tools.ietf.org/html/} RFC prefix link.}}
+          {- MSFT. {{:http://msdn2.microsoft.com/en_us/library/cc206927.aspx} MSFT link.}}
+        }
+       *)
       type t =
-      | PA_TGS_REQ (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_ENC_TIMESTAMP (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_PW_SALT (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_ENC_UNIX_TIME (** (deprecated) @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_SANDIA_SECUREID (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_SESAME (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_OSF_DCE (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_CYBERSAFE_SECUREID (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_AFS3_SALT (** @see <https://tools.ietf.org/html/rfc3961> *)
-      | PA_ETYPE_INFO (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_SAM_CHALLENGE (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-passwords-04> *)
-      | PA_SAM_RESPONSE (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-passwords-04> *)
-      | PA_PK_AS_REQ_OLD (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-pk-init-09> *)
-      | PA_PK_AS_REP_OLD (** @see <https://tools.ietf.org/html/draft-ietf-cat-kerberos-pk-init-09> *)
-      | PA_PK_AS_REQ (** @see <https://tools.ietf.org/html/rfc4556> *)
-      | PA_PK_AS_REP (** @see <https://tools.ietf.org/html/rfc4556> *)
-      | PA_PK_OCSP_RESPONSE (** @see <https://tools.ietf.org/html/rfc4557> *)
-      | PA_ETYPE_INFO2 (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_USE_SPECIFIED_KVNO (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_SVR_REFERRAL_INFO (** @see <https://tools.ietf.org/html/rfc6806> *)
-      | PA_SAM_REDIRECT (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_GET_FROM_TYPED_DATA (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | TD_PADATA (** @see <https://tools.ietf.org/html/rfc4120> *)
-      | PA_SAM_ETYPE_INFO (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-sam-03> *)
-      | PA_ALT_PRINC (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-hw-auth-04> *)
-      | PA_SERVER_REFERRAL (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-referrals-11> *)
-      | PA_SAM_CHALLENGE2 (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-sam-03> *)
-      | PA_SAM_RESPONSE2 (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-kerberos-sam-03> *)
-      | PA_EXTRA_TGT (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | TD_PKINIT_CMS_CERTIFICATES (** @see <https://tools.ietf.org/html/rfc4556> *)
-      | TD_KRB_PRINCIPAL (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | TD_KRB_REALM (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | TD_TRUSTED_CERTIFIERS (** @see <https://tools.ietf.org/html/rfc4556> *)
-      | TD_CERTIFICATE_INDEX (** @see <https://tools.ietf.org/html/rfc4556> *)
-      | TD_APP_DEFINED_ERROR (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | TD_REQ_NONCE (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | TD_REQ_SEQ (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | TD_DH_PARAMETERS (** @see <https://tools.ietf.org/html/rfc4556> *)
-      | TD_CMS_DIGEST_ALGORITHMS (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-pkinit-alg-agility> *)
-      | TD_CERT_DIGEST_ALGORITHMS (** @see <https://tools.ietf.org/html/draft-ietf-krb-wg-pkinit-alg-agility> *)
-      | PA_PAC_REQUEST (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
-      | PA_FOR_USER (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
-      | PA_FOR_X509_USER (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
-      | PA_FOR_CHECK_DUPS (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
-      | PA_AS_CHECKSUM (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
-      | PA_FX_COOKIE (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_AUTHENTICATION_SET (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_AUTH_SET_SELECTED (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_FX_FAST (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_FX_ERROR (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_ENCRYPTED_CHALLENGE (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_OTP_CHALLENGE (** @see <https://tools.ietf.org/html/rfc6560> *)
-      | PA_OTP_REQUEST (** @see <https://tools.ietf.org/html/rfc6560> *)
-      | PA_OTP_CONFIRM (** @see <https://tools.ietf.org/html/rfc6560> *)
-      | PA_OTP_PIN_CHANGE (** @see <https://tools.ietf.org/html/rfc6560> *)
-      | PA_EPAK_AS_REQ (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_EPAK_AS_REP (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | PA_PKINIT_KX (** @see <https://tools.ietf.org/html/rfc8062> *)
-      | PA_PKU2U_NAME (** @see <https://tools.ietf.org/html/draft-zhu-pku2u> *)
-      | PA_REQ_ENC_PA_REP (** @see <https://tools.ietf.org/html/6806> *)
-      | PA_AS_FRESHNESS (** @see <https://tools.ietf.org/html/rfc8070> *)
-      | PA_SUPPORTED_ETYPES (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
-      | PA_EXTENDED_ERROR (** @see <http://msdn2.microsoft.com/en_us/library/cc206927.aspx> *)
+      | PA_TGS_REQ (** IETF rfc4120 *)
+      | PA_ENC_TIMESTAMP (** IETF rfc4120 *)
+      | PA_PW_SALT (** IETF rfc4120 *)
+      | Reserved_0 (** IETF rfc6113 *)
+      | PA_ENC_UNIX_TIME (** IETF rfc4120 *)
+      | PA_SANDIA_SECUREID (** IETF rfc4120 *)
+      | PA_SESAME (** IETF rfc4120 *)
+      | PA_OSF_DCE (** IETF rfc4120 *)
+      | PA_CYBERSAFE_SECUREID (** IETF rfc4120 *)
+      | PA_AFS3_SALT (** IETF rfc3961 *)
+      | PA_ETYPE_INFO (** IETF rfc4120 *)
+      | PA_SAM_CHALLENGE (** IETF draft-ietf-cat-kerberos-passwords-04 *)
+      | PA_SAM_RESPONSE (** IETF draft-ietf-cat-kerberos-passwords-04 *)
+      | PA_PK_AS_REQ_OLD (** IETF draft-ietf-cat-kerberos-pk-init-09 *)
+      | PA_PK_AS_REP_OLD (** IETF draft-ietf-cat-kerberos-pk-init-09 *)
+      | PA_PK_AS_REQ (** IETF rfc4556 *)
+      | PA_PK_AS_REP (** IETF rfc4556 *)
+      | PA_PK_OCSP_RESPONSE (** IETF rfc4557 *)
+      | PA_ETYPE_INFO2 (** IETF rfc4120 *)
+      | PA_USE_SPECIFIED_KVNO (** IETF rfc4120 *)
+      | PA_SVR_REFERRAL_INFO (** IETF rfc6806 *)
+      | PA_SAM_REDIRECT (** IETF rfc4120 *)
+      | PA_GET_FROM_TYPED_DATA (** IETF rfc4120 *)
+      | TD_PADATA (** IETF rfc4120 *)
+      | PA_SAM_ETYPE_INFO (** IETF draft-ietf-krb-wg-kerberos-sam-03 *)
+      | PA_ALT_PRINC (** IETF draft-ietf-krb-wg-hw-auth-04 *)
+      | PA_SERVER_REFERRAL (** IETF draft-ietf-krb-wg-kerberos-referrals-11 *)
+      | PA_SAM_CHALLENGE2 (** IETF draft-ietf-krb-wg-kerberos-sam-03 *)
+      | PA_SAM_RESPONSE2 (** IETF draft-ietf-krb-wg-kerberos-sam-03 *)
+      | PA_EXTRA_TGT (** IETF rfc6113 *)
+      | TD_PKINIT_CMS_CERTIFICATES (** IETF rfc4556 *)
+      | TD_KRB_PRINCIPAL (** IETF rfc6113 *)
+      | TD_KRB_REALM (** IETF rfc6113 *)
+      | TD_TRUSTED_CERTIFIERS (** IETF rfc4556 *)
+      | TD_CERTIFICATE_INDEX (** IETF rfc4556 *)
+      | TD_APP_DEFINED_ERROR (** IETF rfc6113 *)
+      | TD_REQ_NONCE (** IETF rfc6113 *)
+      | TD_REQ_SEQ (** IETF rfc6113 *)
+      | TD_DH_PARAMETERS (** IETF rfc4556 *)
+      | TD_CMS_DIGEST_ALGORITHMS (** IETF draft-ietf-krb-wg-pkinit-alg-agility *)
+      | TD_CERT_DIGEST_ALGORITHMS (** IETF draft-ietf-krb-wg-pkinit-alg-agility *)
+      | PA_PAC_REQUEST (** MSFT *)
+      | PA_FOR_USER (** MSFT *)
+      | PA_FOR_X509_USER (** MSFT *)
+      | PA_FOR_CHECK_DUPS (** MSFT *)
+      | PA_AS_CHECKSUM (** MSFT *)
+      | PA_FX_COOKIE (** IETF rfc6113 *)
+      | PA_AUTHENTICATION_SET (** IETF rfc6113 *)
+      | PA_AUTH_SET_SELECTED (** IETF rfc6113 *)
+      | PA_FX_FAST (** IETF rfc6113 *)
+      | PA_FX_ERROR (** IETF rfc6113 *)
+      | PA_ENCRYPTED_CHALLENGE (** IETF rfc6113 *)
+      | PA_OTP_CHALLENGE (** IETF rfc6560 *)
+      | PA_OTP_REQUEST (** IETF rfc6560 *)
+      | PA_OTP_CONFIRM (** IETF rfc6560 *)
+      | PA_OTP_PIN_CHANGE (** IETF rfc6560 *)
+      | PA_EPAK_AS_REQ (** IETF rfc6113 *)
+      | PA_EPAK_AS_REP (** IETF rfc6113 *)
+      | PA_PKINIT_KX (** IETF rfc8062 *)
+      | PA_PKU2U_NAME (** IETF draft-zhu-pku2u *)
+      | PA_REQ_ENC_PA_REP (** IETF 6806 *)
+      | PA_AS_FRESHNESS (** IETF rfc8070 *)
+      | PA_SUPPORTED_ETYPES (** MSFT *)
+      | PA_EXTENDED_ERROR (** MSFT *)
 
       val alist : (t * int * string) list
     end
@@ -410,7 +425,7 @@ module Msg : sig
   *)
   module Pa_data : sig
     type t =
-      { padata_type : Pa_data_type.t   (** {!module:Pa_data_type.t} *)
+      { padata_type : Pa_data_type.t
       ; padata_value : Octet_string.t
       }
     include Asn1_intf.S with
@@ -421,7 +436,7 @@ module Msg : sig
   (** Encryption Type.
       @see <https://tools.ietf.org/html/rfc3961> RFC
       @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml> IANA Kerberos parameters
-      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1> Kerberos Encryption Type Numbers, LasChecksum typet updated 2017-03-02
+      @see <https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-1> Kerberos Encryption Type Numbers, LastChecksum type updated 2017-03-02
   *)
   module Encryption_type : sig
     type ty =
@@ -509,28 +524,35 @@ module Msg : sig
   *)
   module Checksum_type : sig
     module M : sig
+
+      (**
+        {b References}
+        {ul
+          {- IETF. {{:https://tools.ietf.org/html/} RFC prefix link.}}
+        }
+       *)
       type t =
-      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.3> *)
-      | CRC32 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.3> *)
-      | Rsa_md4 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.2> *)
-      | Rsa_md4_des (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.5> *)
-      | Des_mac (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.7> *)
-      | Des_mac_k (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.8> *)
-      | Rsa_md4_des_k (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.6> *)
-      | Rsa_md5 (** @see <https://tools.ietf.org/html/rfc3961#section-6.1.1> *)
-      | Rsa_md5_des (** @see <https://tools.ietf.org/html/rfc3961#section-6.2.4> *)
+      | Reserved_0 (** IETF rfc3961#section-6.1.3 *)
+      | CRC32 (** IETF rfc3961#section-6.1.3 *)
+      | Rsa_md4 (** IETF rfc3961#section-6.1.2 *)
+      | Rsa_md4_des (** IETF rfc3961#section-6.2.5 *)
+      | Des_mac (** IETF rfc3961#section-6.2.7 *)
+      | Des_mac_k (** IETF rfc3961#section-6.2.8 *)
+      | Rsa_md4_des_k (** IETF rfc3961#section-6.2.6 *)
+      | Rsa_md5 (** IETF rfc3961#section-6.1.1 *)
+      | Rsa_md5_des (** IETF rfc3961#section-6.2.4 *)
       | Rsa_md5_des3
       | Sha1_unkeyed_0
-      | Hmac_sha1_des3_kd (** @see <https://tools.ietf.org/html/rfc3961#section-6.3> *)
+      | Hmac_sha1_des3_kd (** IETF rfc3961#section-6.3 *)
       | Hmac_sha1_des3
       | Sha1_unkeyed_1
-      | Hmac_sha1_96_aes128 (** @see <https://tools.ietf.org/html/rfc3962> *)
-      | Hmac_sha1_96_aes256 (** @see <https://tools.ietf.org/html/rfc3962> *)
-      | Cmac_camellia128 (** @see <https://tools.ietf.org/html/rfc6803> *)
-      | Cmac_camellia256 (** @see <https://tools.ietf.org/html/rfc6803> *)
-      | Hmac_sha256_128_aes128 (** @see <https://tools.ietf.org/html/rfc8009> *)
-      | Hmac_sha256_192_aes256 (** @see <https://tools.ietf.org/html/rfc8009> *)
-      | Reserved_1 (** @see <https://tools.ietf.org/html/rfc1964> *)
+      | Hmac_sha1_96_aes128 (** IETF rfc3962 *)
+      | Hmac_sha1_96_aes256 (** IETF rfc3962 *)
+      | Cmac_camellia128 (** IETF rfc6803 *)
+      | Cmac_camellia256 (** IETF rfc6803 *)
+      | Hmac_sha256_128_aes128 (** IETF rfc8009 *)
+      | Hmac_sha256_192_aes256 (** IETF rfc8009 *)
+      | Reserved_1 (** IETF rfc1964 *)
 
       val alist : (t * int * string) list
     end
@@ -1073,10 +1095,17 @@ module Msg : sig
       @see <https://tools.ietf.org/html/rfc4120#section-5.5.2> Section KRB_AP_REP Definition.
   *)
   module Enc_ap_rep_part : sig
+
+      (**
+        {b References}
+        {ul
+          {- IETF. {{:https://tools.ietf.org/html/} RFC prefix link.}}
+        }
+       *)
     type t =
       { ctime : Kerberos_time.t
       ; cusec : Microseconds.t
-      ; subkey : Encryption_key.t option (** @see <https://tools.ietf.org/html/rfc4120#section-3.2.6> Using the Encryption Key. *)
+      ; subkey : Encryption_key.t option (** IETF rfc4120#section-3.2.6 Using the Encryption Key. *)
       ; seq_number : Uint32.t option
       }
     include Asn1_intf.S with
@@ -1281,9 +1310,16 @@ module Msg : sig
   *)
   module Tcp_extension : sig
     module M : sig
+
+      (**
+        {b References}
+        {ul
+          {- IETF. {{:https://tools.ietf.org/html/} RFC prefix link.}}
+        }
+       *)
       type t =
-      | Krb5_over_TLS (** @see <https://tools.ietf.org/html/rfc6251> *)
-      | Reserved_30 (** @see <https://tools.ietf.org/html/rfc5021> *)
+      | Krb5_over_TLS (** IETF rfc6251 *)
+      | Reserved_30 (** IETF rfc5021 *)
 
       val alist : (t * int * string) list
     end
@@ -1300,9 +1336,16 @@ module Msg : sig
   *)
   module Fast_armor_type : sig
     module M : sig
+
+      (**
+        {b References}
+        {ul
+          {- IETF. {{:https://tools.ietf.org/html/} RFC prefix link.}}
+        }
+       *)
       type t =
-      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | FX_FAST_ARMOR_AP_REQUEST (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | Reserved_0 (** IETF rfc6113 *)
+      | FX_FAST_ARMOR_AP_REQUEST (** IETF rfc6113 *)
 
       val alist : (t * int * string) list
     end
@@ -1319,11 +1362,18 @@ module Msg : sig
   *)
   module Transport_type : sig
     module M : sig
+
+      (**
+        {b References}
+        {ul
+          {- IETF. {{:https://tools.ietf.org/html/} RFC prefix link.}}
+        }
+       *)
       type t =
-      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6784> *)
-      | UDP (** @see <https://tools.ietf.org/html/rfc6784> *)
-      | TCP (** @see <https://tools.ietf.org/html/rfc6784> *)
-      | TLS (** @see <https://tools.ietf.org/html/rfc6784> *)
+      | Reserved_0 (** IETF rfc6784 *)
+      | UDP (** IETF rfc6784 *)
+      | TCP (** IETF rfc6784 *)
+      | TLS (** IETF rfc6784 *)
 
       val alist : (t * int * string) list
     end
@@ -1340,10 +1390,17 @@ module Msg : sig
   *)
   module Fast_options : sig
     module Flags : sig
+
+      (**
+        {b References}
+        {ul
+          {- IETF. {{:https://tools.ietf.org/html/} RFC prefix link.}}
+        }
+       *)
       type t =
-      | Reserved_0 (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | Hide_client_names (** @see <https://tools.ietf.org/html/rfc6113> *)
-      | Kdc_follow_referrals (** @see <https://tools.ietf.org/html/rfc6113> *)
+      | Reserved_0 (** IETF rfc6113 *)
+      | Hide_client_names (** IETF rfc6113 *)
+      | Kdc_follow_referrals (** IETF rfc6113 *)
 
       val alist : (t * int * string) list
       module Encoding_options : sig

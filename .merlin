@@ -1,4 +1,4 @@
-PKG bytes asn1-combinators cstruct ptime
+PKG bytes asn1-combinators cstruct ptime topkg
 S lib
 S test
 B _build/**

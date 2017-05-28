@@ -65,8 +65,7 @@ module Asn1 = Krb_int32.Of_alist(M)
 include Asn1
 
 (* I bet this list will grow longer one day. *)
-let is_weak t =
-  match t with
+let is_weak = function
   | Des_cbc_crc
   | Des_cbc_md4
   | Des_cbc_md5
@@ -75,8 +74,7 @@ let is_weak t =
 
 (* Certain steps of the krb5 protocol are different depending on how old the encryption type is.
    Thus we expose a function to test whether an encryption type is considered new or old. *)
-let is_newer_than_rfc_4120 t =
-  match t with
+let is_newer_than_rfc_4120 = function
   | Reserved_0
   | Des3_cbc_md5
   | Des3_cbc_sha1
@@ -94,4 +92,24 @@ let is_newer_than_rfc_4120 t =
   | Camellia128_cts_cmac
   | Camellia256_cts_cmac
   | Subkey_keymaterial -> true
+  | _ -> false
+
+(** "not-newer" encryption types as specified by rfc4121
+    @see <https://tools.ietf.org/html/rfc4121>
+*)
+let is_not_newer_as_of_rfc4121 = function
+  | Des_cbc_crc                  (* rfc3961 *)
+  | Des_cbc_md4                  (* rfc3961 *)
+  | Des_cbc_md5                  (* rfc3961 *)
+  | Des3_cbc_md5                 (* ?? *)
+  | Des3_cbc_sha1                (* ?? *)
+  | DsaWithSHA1_CmsOID           (* rfc4556 *)
+  | Md5WithRSAEncryption_CmsOID  (* rfc4556 *)
+  | Sha1WithRSAEncryption_CmsOID (* rfc4556 *)
+  | Rc2CBC_EnvOID                (* rfc4556 *)
+  | RsaEncryption_EnvOID         (* rfc4556 [from PKCS #1 v1.5] *)
+  | RsaES_OAEP_ENV_OID           (* rfc4556 [from PKCS #1 v2.0] *)
+  | Des_ede3_cbc_Env_OID         (* rfc4556 *)
+  | Des3_cbc_sha1_kd             (* rfc3961 *)
+  | Rc4_hmac -> true             (* rfc4757 *)
   | _ -> false
