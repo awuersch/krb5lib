@@ -140,6 +140,17 @@ module Msg = struct
   module Types = Types
 end
 
+include X509_certificate
+
+module Extension = X509_extension
+
+module CA = X509_ca
+
+module Authenticator = X509_authenticator
+
+module Encoding = X509_encoding
+
+
 (*---------------------------------------------------------------------------
    Copyright (c) 2017 Tony Wuersch
    Copyright (c) 2015 Brandon Bohrer

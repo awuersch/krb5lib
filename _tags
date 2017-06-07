@@ -1,4 +1,6 @@
-true : bin_annot, safe_string, package(bytes,sexplib,ppx_sexp_conv,asn1-combinators,zarith)
+true : bin_annot, principal, safe_string
+true : warn(+A-4-41-42-44)
+true : package(asn1-combinators cstruct nocrypto sexplib astring bytes ppx_sexp_conv zarith)
 
 <lib> : include
 <test> : include

@@ -1,7 +1,5 @@
-open Sexplib.Std
-
 module type S = sig
-  type t [@@deriving sexp]
+  type t
   module Ast : sig
     type t
 

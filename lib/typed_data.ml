@@ -19,11 +19,11 @@ module Datum = struct
 
   let ast_of_t t =
     Krb_int32.ast_of_t t.data_type,
-    Option.map Octet_string.ast_of_t t.data_value
+    Option.map ~f:Octet_string.ast_of_t t.data_value
 
   let t_of_ast (a, b) =
     { data_type = Krb_int32.t_of_ast a
-    ; data_value = Option.map Octet_string.t_of_ast b
+    ; data_value = Option.map ~f:Octet_string.t_of_ast b
     }
 end
 

@@ -48,21 +48,21 @@ let ast_of_t t =
    (Z.of_int 5 (* pvno *)
   ,(Realm.ast_of_t t.crealm
   ,(Principal_name.ast_of_t t.cname
-  ,(Option.map Checksum.ast_of_t t.cksum
+  ,(Option.map ~f:Checksum.ast_of_t t.cksum
   ,(Microseconds.ast_of_t t.cusec
   ,(Kerberos_time.ast_of_t t.ctime
-  ,(Option.map Encryption_key.ast_of_t t.subkey
-  ,(Option.map Uint32.ast_of_t t.seq_number
-  , Option.map Authorization_data.ast_of_t authorization_data))))))))
+  ,(Option.map ~f:Encryption_key.ast_of_t t.subkey
+  ,(Option.map ~f:Uint32.ast_of_t t.seq_number
+  , Option.map ~f:Authorization_data.ast_of_t authorization_data))))))))
 
 let t_of_ast (_, (a, (b, (c, (d, (e, (f, (g, h)))))))) =
   { crealm = Realm.t_of_ast a
   ; cname = Principal_name.t_of_ast b
-  ; cksum = Option.map Checksum.t_of_ast c
+  ; cksum = Option.map ~f:Checksum.t_of_ast c
   ; cusec = Microseconds.t_of_ast d
   ; ctime = Kerberos_time.t_of_ast e
-  ; subkey = Option.map Encryption_key.t_of_ast f
-  ; seq_number = Option.map Uint32.t_of_ast g
+  ; subkey = Option.map ~f:Encryption_key.t_of_ast f
+  ; seq_number = Option.map ~f:Uint32.t_of_ast g
   ; authorization_data = (match h with
       None -> []
     | Some lst -> Authorization_data.t_of_ast lst)

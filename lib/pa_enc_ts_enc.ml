@@ -18,9 +18,9 @@ end
 
 let ast_of_t t =
   ( Kerberos_time.ast_of_t t.patimestamp
-  , Option.map Microseconds.ast_of_t t.pausec )
+  , Option.map ~f:Microseconds.ast_of_t t.pausec )
 
 let t_of_ast (a, b) =
   { patimestamp = Kerberos_time.t_of_ast a
-  ; pausec = Option.map Microseconds.t_of_ast b
+  ; pausec = Option.map ~f:Microseconds.t_of_ast b
   }

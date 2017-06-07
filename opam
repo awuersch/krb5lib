@@ -6,16 +6,20 @@ doc: "https://tony.wuersch.name/krb5lib/doc"
 license: "ISC"
 dev-repo: "https://github.com/awuersch/krb5lib.git"
 bug-reports: "https://github.com/awuersch/krb5lib/issues"
-tags: []
-available: [ ocaml-version >= "4.01.0"]
+tags: [ "org:mirage" ]
+available: [ ocaml-version >= "4.02.2"]
 depends:
 [
   "ocamlfind" {build}
   "ocamlbuild" {build}
   "ppx_sexp_conv" {build}
-  "topkg" {build & >= "0.9.0"}
+  "topkg" {build}
+  "cstruct" {>= "1.6.0"}
   "sexplib"
   "asn1-combinators" {>= "0.1.1"}
+  "nocrypto" {>= "0.5.3"}
+  "astring"
+  "sexplib"
 ]
 depopts: []
 build:

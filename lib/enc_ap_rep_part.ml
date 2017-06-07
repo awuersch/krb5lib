@@ -28,12 +28,12 @@ end
 let ast_of_t t =
   ( Kerberos_time.ast_of_t t.ctime
   , Microseconds.ast_of_t t.cusec
-  , Option.map Encryption_key.ast_of_t t.subkey
-  , Option.map Uint32.ast_of_t t.seq_number )
+  , Option.map ~f:Encryption_key.ast_of_t t.subkey
+  , Option.map ~f:Uint32.ast_of_t t.seq_number )
 
 let t_of_ast (a, b, c, d) =
   { ctime = Kerberos_time.t_of_ast a
   ; cusec = Microseconds.t_of_ast b
-  ; subkey = Option.map Encryption_key.t_of_ast c
-  ; seq_number = Option.map Uint32.t_of_ast d
+  ; subkey = Option.map ~f:Encryption_key.t_of_ast c
+  ; seq_number = Option.map ~f:Uint32.t_of_ast d
   }

@@ -6,9 +6,7 @@
   ---------------------------------------------------------------------------*)
 
 open Sexplib
-open Std
 open Asn.S
-open Krb_combinators
 
 let all_types = Types.all
 
@@ -26,7 +24,7 @@ let run () =
       let input = Asn.random asn in
       Printf.printf "%s\n" name;
       let s =
-        try Type.t_of_ast input |> Type.sexp_of_t |> Sexp.to_string_hum with
+        try Type.t_of_ast input |> Type.sexp_of_t |> (Sexp.to_string_hum ~indent:2) with
         | Not_found -> "not_found"
         | Failure errstr -> "Failure: " ^ errstr
       in

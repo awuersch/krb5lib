@@ -26,14 +26,14 @@ end
 
 let ast_of_t t =
   ( Checksum.ast_of_t t.ad_checksum
-  , Option.map Realm.ast_of_t t.i_realm
-  , Option.map Principal_name.ast_of_t t.i_sname
+  , Option.map ~f:Realm.ast_of_t t.i_realm
+  , Option.map ~f:Principal_name.ast_of_t t.i_sname
   , Authorization_data.ast_of_t t.elements
   )
 
 let t_of_ast (a, b, c, d) =
   { ad_checksum = Checksum.t_of_ast a
-  ; i_realm = Option.map Realm.t_of_ast b
-  ; i_sname = Option.map Principal_name.t_of_ast c
+  ; i_realm = Option.map ~f:Realm.t_of_ast b
+  ; i_sname = Option.map ~f:Principal_name.t_of_ast c
   ; elements = Authorization_data.t_of_ast d
   }

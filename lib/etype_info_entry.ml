@@ -18,9 +18,9 @@ end
 
 let ast_of_t t =
   ( Krb_int32.ast_of_t t.etype
-  , Option.map Octet_string.ast_of_t t.salt )
+  , Option.map ~f:Octet_string.ast_of_t t.salt )
 
 let t_of_ast (a, b) =
   { etype = Krb_int32.t_of_ast a
-  ; salt = Option.map Octet_string.t_of_ast b
+  ; salt = Option.map ~f:Octet_string.t_of_ast b
   }

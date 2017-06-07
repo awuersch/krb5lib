@@ -65,11 +65,11 @@ let ast_of_t t =
   ,(Principal_name.ast_of_t t.cname
   ,(Transited_encoding.ast_of_t t.transited
   ,(Kerberos_time.ast_of_t t.authtime
-  ,(Option.map Kerberos_time.ast_of_t t.starttime
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.starttime
   ,(Kerberos_time.ast_of_t t.endtime
-  ,(Option.map Kerberos_time.ast_of_t t.renew_till
-  ,(Option.map Host_addresses.ast_of_t caddr
-  , Option.map Authorization_data.ast_of_t authorization_data))))))))))
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.renew_till
+  ,(Option.map ~f:Host_addresses.ast_of_t caddr
+  , Option.map ~f:Authorization_data.ast_of_t authorization_data))))))))))
 
 let t_of_ast (a, (b, (c, (d, (e, (f, (g, (h, (i, (j, k)))))))))) =
   { flags = Ticket_flags.t_of_ast a
@@ -78,9 +78,9 @@ let t_of_ast (a, (b, (c, (d, (e, (f, (g, (h, (i, (j, k)))))))))) =
   ; cname = Principal_name.t_of_ast d
   ; transited = Transited_encoding.t_of_ast e
   ; authtime = Kerberos_time.t_of_ast f
-  ; starttime = Option.map Kerberos_time.t_of_ast g
+  ; starttime = Option.map ~f:Kerberos_time.t_of_ast g
   ; endtime = Kerberos_time.t_of_ast h
-  ; renew_till = Option.map Kerberos_time.t_of_ast i
+  ; renew_till = Option.map ~f:Kerberos_time.t_of_ast i
   ; caddr = (match j with
       None -> []
     | Some lst -> Host_addresses.t_of_ast lst)

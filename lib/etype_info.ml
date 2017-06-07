@@ -1,6 +1,5 @@
 open Sexplib.Std
 open Asn.S
-open Krb_combinators
 
 type t = Etype_info_entry.t list [@@deriving sexp]
 

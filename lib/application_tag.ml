@@ -1,5 +1,3 @@
-open Sexplib.Std
-
 type t =
 [ `Ticket
 | `Authenticator

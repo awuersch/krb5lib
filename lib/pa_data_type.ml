@@ -1,5 +1,3 @@
-open Sexplib.Std
-
 module M = struct
   type t =
   | PA_TGS_REQ                 (* [RFC4120] *)

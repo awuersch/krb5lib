@@ -32,17 +32,17 @@ end
 
 let ast_of_t t =
    (Octet_string.ast_of_t t.user_data
-  ,(Option.map Kerberos_time.ast_of_t t.timestamp
-  ,(Option.map Microseconds.ast_of_t t.usec
-  ,(Option.map Uint32.ast_of_t t.seq_number
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.timestamp
+  ,(Option.map ~f:Microseconds.ast_of_t t.usec
+  ,(Option.map ~f:Uint32.ast_of_t t.seq_number
   ,(Host_address.ast_of_t t.s_address
-  , Option.map Host_address.ast_of_t t.r_address)))))
+  , Option.map ~f:Host_address.ast_of_t t.r_address)))))
 
 let t_of_ast (a, (b, (c, (d, (e, f))))) =
   { user_data = Octet_string.t_of_ast a
-  ; timestamp = Option.map Kerberos_time.t_of_ast b
-  ; usec = Option.map Microseconds.t_of_ast c
-  ; seq_number = Option.map Uint32.t_of_ast d
+  ; timestamp = Option.map ~f:Kerberos_time.t_of_ast b
+  ; usec = Option.map ~f:Microseconds.t_of_ast c
+  ; seq_number = Option.map ~f:Uint32.t_of_ast d
   ; s_address = Host_address.t_of_ast e
-  ; r_address = Option.map Host_address.t_of_ast f
+  ; r_address = Option.map ~f:Host_address.t_of_ast f
   }

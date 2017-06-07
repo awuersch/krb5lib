@@ -52,28 +52,28 @@ let ast_of_t t =
     | lst -> Some lst
   in
    (Encryption_key.ast_of_t t.key
-  ,(Option.map Realm.ast_of_t t.prealm
-  ,(Option.map Principal_name.ast_of_t t.pname
-  ,(Option.map Ticket_flags.ast_of_t t.flags
-  ,(Option.map Kerberos_time.ast_of_t t.authtime
-  ,(Option.map Kerberos_time.ast_of_t t.starttime
-  ,(Option.map Kerberos_time.ast_of_t t.endtime
-  ,(Option.map Kerberos_time.ast_of_t t.renew_till
-  ,(Option.map Realm.ast_of_t t.srealm
-  ,(Option.map Principal_name.ast_of_t t.sname
-  , Option.map Host_addresses.ast_of_t caddr))))))))))
+  ,(Option.map ~f:Realm.ast_of_t t.prealm
+  ,(Option.map ~f:Principal_name.ast_of_t t.pname
+  ,(Option.map ~f:Ticket_flags.ast_of_t t.flags
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.authtime
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.starttime
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.endtime
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.renew_till
+  ,(Option.map ~f:Realm.ast_of_t t.srealm
+  ,(Option.map ~f:Principal_name.ast_of_t t.sname
+  , Option.map ~f:Host_addresses.ast_of_t caddr))))))))))
 
 let t_of_ast (a, (b, (c, (d, (e, (f, (g, (h, (i, (j, k)))))))))) =
   { key = Encryption_key.t_of_ast a
-  ; prealm = Option.map Realm.t_of_ast b
-  ; pname = Option.map Principal_name.t_of_ast c
-  ; flags = Option.map Ticket_flags.t_of_ast d
-  ; authtime = Option.map Kerberos_time.t_of_ast e
-  ; starttime = Option.map Kerberos_time.t_of_ast f
-  ; endtime = Option.map Kerberos_time.t_of_ast g
-  ; renew_till = Option.map Kerberos_time.t_of_ast h
-  ; srealm = Option.map Realm.t_of_ast i
-  ; sname = Option.map Principal_name.t_of_ast j
+  ; prealm = Option.map ~f:Realm.t_of_ast b
+  ; pname = Option.map ~f:Principal_name.t_of_ast c
+  ; flags = Option.map ~f:Ticket_flags.t_of_ast d
+  ; authtime = Option.map ~f:Kerberos_time.t_of_ast e
+  ; starttime = Option.map ~f:Kerberos_time.t_of_ast f
+  ; endtime = Option.map ~f:Kerberos_time.t_of_ast g
+  ; renew_till = Option.map ~f:Kerberos_time.t_of_ast h
+  ; srealm = Option.map ~f:Realm.t_of_ast i
+  ; sname = Option.map ~f:Principal_name.t_of_ast j
   ; caddr = (match k with
       None -> []
     | Some lst -> Host_addresses.t_of_ast lst)

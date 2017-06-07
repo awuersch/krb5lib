@@ -33,17 +33,17 @@ end
 
 let ast_of_t t =
    (List.map Krb_cred_info.ast_of_t t.ticket_info
-  ,(Option.map Uint32.ast_of_t t.nonce
-  ,(Option.map Kerberos_time.ast_of_t t.timestamp
-  ,(Option.map Microseconds.ast_of_t t.usec
-  ,(Option.map Host_address.ast_of_t t.s_address
-  , Option.map Host_address.ast_of_t t.r_address)))))
+  ,(Option.map ~f:Uint32.ast_of_t t.nonce
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.timestamp
+  ,(Option.map ~f:Microseconds.ast_of_t t.usec
+  ,(Option.map ~f:Host_address.ast_of_t t.s_address
+  , Option.map ~f:Host_address.ast_of_t t.r_address)))))
 
 let t_of_ast (a, (b, (c, (d, (e, f))))) =
   { ticket_info = List.map Krb_cred_info.t_of_ast a
-  ; nonce = Option.map Uint32.t_of_ast b
-  ; timestamp = Option.map Kerberos_time.t_of_ast c
-  ; usec = Option.map Microseconds.t_of_ast d
-  ; s_address = Option.map Host_address.t_of_ast e
-  ; r_address = Option.map Host_address.t_of_ast f
+  ; nonce = Option.map ~f:Uint32.t_of_ast b
+  ; timestamp = Option.map ~f:Kerberos_time.t_of_ast c
+  ; usec = Option.map ~f:Microseconds.t_of_ast d
+  ; s_address = Option.map ~f:Host_address.t_of_ast e
+  ; r_address = Option.map ~f:Host_address.t_of_ast f
   }

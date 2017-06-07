@@ -56,30 +56,30 @@ let ast_of_t t =
     | lst -> Some (List.map Ticket.ast_of_t lst)
   in
   (Kdc_options.ast_of_t t.kdc_options,
-  (Option.map Principal_name.ast_of_t t.cname,
+  (Option.map ~f:Principal_name.ast_of_t t.cname,
   (Realm.ast_of_t t.realm,
-  (Option.map Principal_name.ast_of_t t.sname,
-  (Option.map Kerberos_time.ast_of_t t.from,
+  (Option.map ~f:Principal_name.ast_of_t t.sname,
+  (Option.map ~f:Kerberos_time.ast_of_t t.from,
   (Kerberos_time.ast_of_t t.till,
-  (Option.map Kerberos_time.ast_of_t t.rtime,
+  (Option.map ~f:Kerberos_time.ast_of_t t.rtime,
   (Uint32.ast_of_t t.nonce,
   (List.map Encryption_type.ast_of_t t.etype,
-  (Option.map Host_addresses.ast_of_t t.addresses,
-  (Option.map Encrypted_data.ast_of_t t.enc_authorization_data,
+  (Option.map ~f:Host_addresses.ast_of_t t.addresses,
+  (Option.map ~f:Encrypted_data.ast_of_t t.enc_authorization_data,
    additional_tickets)))))))))))
 
 let t_of_ast (a, (b, (c, (d, (e, (f, (g, (h, (i, (j, (k, l))))))))))) =
   { kdc_options = Kdc_options.t_of_ast a
-  ; cname = Option.map Principal_name.t_of_ast b
+  ; cname = Option.map ~f:Principal_name.t_of_ast b
   ; realm = Realm.t_of_ast c
-  ; sname = Option.map Principal_name.t_of_ast d
-  ; from = Option.map Kerberos_time.t_of_ast e
+  ; sname = Option.map ~f:Principal_name.t_of_ast d
+  ; from = Option.map ~f:Kerberos_time.t_of_ast e
   ; till = Kerberos_time.t_of_ast f
-  ; rtime = Option.map Kerberos_time.t_of_ast g
+  ; rtime = Option.map ~f:Kerberos_time.t_of_ast g
   ; nonce = Uint32.t_of_ast h
   ; etype = List.map Encryption_type.t_of_ast i
-  ; addresses = Option.map Host_addresses.t_of_ast j
-  ; enc_authorization_data = Option.map Encrypted_data.t_of_ast k
+  ; addresses = Option.map ~f:Host_addresses.t_of_ast j
+  ; enc_authorization_data = Option.map ~f:Encrypted_data.t_of_ast k
   ; additional_tickets = match l with
     | None -> []
     | Some lst -> List.map Ticket.t_of_ast lst

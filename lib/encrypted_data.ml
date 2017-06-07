@@ -21,11 +21,11 @@ end
 
 let ast_of_t t =
   ( Encryption_type.ast_of_t t.etype
-  , Option.map Uint32.ast_of_t t.kvno
+  , Option.map ~f:Uint32.ast_of_t t.kvno
   , Octet_string.ast_of_t t.cipher )
 
 let t_of_ast (a, b, c) =
   { etype = Encryption_type.t_of_ast a
-  ; kvno = Option.map Uint32.t_of_ast b
+  ; kvno = Option.map ~f:Uint32.t_of_ast b
   ; cipher = Octet_string.t_of_ast c
   }

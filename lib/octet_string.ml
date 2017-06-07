@@ -11,6 +11,6 @@ module Ast = struct
   let asn = octet_string
 end
 
-let ast_of_t : t -> Ast.t = Cstruct.of_string
+let ast_of_t : t -> Ast.t = Cstruct.of_string ~allocator:Cstruct.create
 
 let t_of_ast : Ast.t -> t = Cstruct.to_string

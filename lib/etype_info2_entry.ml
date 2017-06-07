@@ -23,11 +23,11 @@ end
 
 let ast_of_t t =
   ( Krb_int32.ast_of_t t.etype
-  , Option.map Kerberos_string.ast_of_t t.salt
-  , Option.map Octet_string.ast_of_t t.s2kparams )
+  , Option.map ~f:Kerberos_string.ast_of_t t.salt
+  , Option.map ~f:Octet_string.ast_of_t t.s2kparams )
 
 let t_of_ast (a, b, c) =
   { etype = Krb_int32.t_of_ast a
-  ; salt = Option.map Kerberos_string.t_of_ast b
-  ; s2kparams = Option.map Octet_string.t_of_ast c
+  ; salt = Option.map ~f:Kerberos_string.t_of_ast b
+  ; s2kparams = Option.map ~f:Octet_string.t_of_ast c
   }

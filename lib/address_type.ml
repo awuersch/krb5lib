@@ -1,5 +1,3 @@
-open Sexplib.Std
-
 module M = struct
   type t =
   | Ipv4

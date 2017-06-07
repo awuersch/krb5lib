@@ -58,26 +58,26 @@ let ast_of_t t =
    (Encryption_key.ast_of_t t.key
   ,(Last_req.ast_of_t t.last_req
   ,(Uint32.ast_of_t t.nonce
-  ,(Option.map Kerberos_time.ast_of_t t.key_expiration
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.key_expiration
   ,(Ticket_flags.ast_of_t t.flags
   ,(Kerberos_time.ast_of_t t.authtime
-  ,(Option.map Kerberos_time.ast_of_t t.starttime
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.starttime
   ,(Kerberos_time.ast_of_t t.endtime
-  ,(Option.map Kerberos_time.ast_of_t t.renew_till
+  ,(Option.map ~f:Kerberos_time.ast_of_t t.renew_till
   ,(Realm.ast_of_t t.srealm
   ,(Principal_name.ast_of_t t.sname
-  , Option.map Host_addresses.ast_of_t caddr)))))))))))
+  , Option.map ~f:Host_addresses.ast_of_t caddr)))))))))))
 
 let t_of_ast (a, (b, (c, (d, (e, (f, (g, (h, (i, (j, (k, l))))))))))) =
   { key = Encryption_key.t_of_ast a
   ; last_req = Last_req.t_of_ast b
   ; nonce = Uint32.t_of_ast c
-  ; key_expiration = Option.map Kerberos_time.t_of_ast d
+  ; key_expiration = Option.map ~f:Kerberos_time.t_of_ast d
   ; flags = Ticket_flags.t_of_ast e
   ; authtime = Kerberos_time.t_of_ast f
-  ; starttime = Option.map Kerberos_time.t_of_ast g
+  ; starttime = Option.map ~f:Kerberos_time.t_of_ast g
   ; endtime = Kerberos_time.t_of_ast h
-  ; renew_till = Option.map Kerberos_time.t_of_ast i
+  ; renew_till = Option.map ~f:Kerberos_time.t_of_ast i
   ; srealm = Realm.t_of_ast j
   ; sname = Principal_name.t_of_ast k
   ; caddr = (match l with

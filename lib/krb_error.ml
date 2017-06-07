@@ -53,29 +53,29 @@ end
 let ast_of_t t =
     Z.of_int 5 (* Where 5 means krb5 - this is a constant forever *)
   , ( Application_tag.int_of_t `Krb_error |> Z.of_int
-  , ( Option.map Kerberos_time.ast_of_t t.ctime
-  , ( Option.map Microseconds.ast_of_t t.cusec
+  , ( Option.map ~f:Kerberos_time.ast_of_t t.ctime
+  , ( Option.map ~f:Microseconds.ast_of_t t.cusec
   , ( Kerberos_time.ast_of_t t.stime
   , ( Microseconds.ast_of_t t.susec
   , ( Krb_int32.ast_of_t t.error_code
-  , ( Option.map Realm.ast_of_t t.crealm
-  , ( Option.map Principal_name.ast_of_t t.cname
+  , ( Option.map ~f:Realm.ast_of_t t.crealm
+  , ( Option.map ~f:Principal_name.ast_of_t t.cname
   , ( Realm.ast_of_t t.realm
   , ( Principal_name.ast_of_t t.sname
-  , ( Option.map Kerberos_string.ast_of_t t.e_text
-  ,   Option.map Octet_string.ast_of_t t.e_data)))))))))))
+  , ( Option.map ~f:Kerberos_string.ast_of_t t.e_text
+  ,   Option.map ~f:Octet_string.ast_of_t t.e_data)))))))))))
 
 let t_of_ast : Ast.t -> t = function
   | (_, (_, (a, (b, (c, (d, (e, (f, (g, (h, (i, (j, k)))))))))))) -> 
-    { ctime = Option.map Kerberos_time.t_of_ast a
-    ; cusec = Option.map Microseconds.t_of_ast b
+    { ctime = Option.map ~f:Kerberos_time.t_of_ast a
+    ; cusec = Option.map ~f:Microseconds.t_of_ast b
     ; stime = Kerberos_time.t_of_ast c
     ; susec = Microseconds.t_of_ast d
     ; error_code = Krb_int32.t_of_ast e
-    ; crealm = Option.map Realm.t_of_ast f
-    ; cname = Option.map Principal_name.t_of_ast g
+    ; crealm = Option.map ~f:Realm.t_of_ast f
+    ; cname = Option.map ~f:Principal_name.t_of_ast g
     ; realm = Realm.t_of_ast h
     ; sname = Principal_name.t_of_ast i
-    ; e_text = Option.map Kerberos_string.t_of_ast j
-    ; e_data = Option.map Octet_string.t_of_ast k
+    ; e_text = Option.map ~f:Kerberos_string.t_of_ast j
+    ; e_data = Option.map ~f:Octet_string.t_of_ast k
     }

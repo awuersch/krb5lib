@@ -1,5 +1,3 @@
-open Sexplib.Std
-
 (** {{https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml#kerberos-parameters-6} Fast Options, Last updated 2017-03-02} *)
 module Flags = struct
   type t =

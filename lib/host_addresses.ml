@@ -1,6 +1,5 @@
 open Sexplib.Std
 open Asn.S
-open Krb_combinators
 
 (* Always used as on optional field - only use if nonempty *)
 type t = Host_address.t list [@@deriving sexp]
