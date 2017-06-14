@@ -9,7 +9,7 @@
     {b References}
     {ul
     {- rfc4120 Appendix A. {{:https://tools.ietf.org/html/rfc4120#appendixA} The
-         Kerberos Authentication Service (V5)}, Appendex A. ASN.1 module}
+         Kerberos Authentication Service (V5)}, Appendix A. ASN.1 module}
     {- rfc4120. {{:https://tools.ietf.org/html/rfc4120} The
          Kerberos Authentication Service (V5)}}
     {- rfc4537.  {{:https://tools.ietf.org/html/rfc4537} Kerberos
@@ -1527,6 +1527,88 @@ module Msg : sig
     include Asn1_intf.S with
           type t := t
       and type Ast.t = Etype_info2_entry.Ast.t list
+  end
+
+  (** Utility msg.  External principal identifier.
+      @see <https://tools.ietf.org/html/rfc4556> RFC
+      @see <https://tools.ietf.org/html/rfc4556#section-3.2.1> Section Generation of Client Request
+  *)
+  module External_principal_identifier : sig
+    type t =
+      { subject_name : Octet_string.t option
+      ; issuer_and_serial_number : Octet_string.t option
+      ; subject_key_identifier : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Cstruct.t option * Cstruct.t option * Cstruct.t option
+  end
+
+  (** Utility msg.  PKINIT Pre-Authentication Client Request.
+      @see <https://tools.ietf.org/html/rfc4556> RFC
+      @see <https://tools.ietf.org/html/rfc4556#section-3.2.1> Section Generation of Client Request
+  *)
+  module Pa_pk_as_req : sig
+    type t =
+      { signed_auth_pack : Octet_string.t
+      ; trusted_certifiers : External_principal_identifier.t list
+      ; kdc_pk_id : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Octet_string.Ast.t
+            * External_principal_identifier.Ast.t list option
+            * Octet_string.Ast.t option
+  end
+
+  (** Msg component.  PKINIT Pk authenticator.
+      @see <https://tools.ietf.org/html/rfc4556> RFC
+      @see <https://tools.ietf.org/html/rfc4556#section-3.2.1> Section Generation of Client Request
+  *)
+  module Pk_authenticator : sig
+    type t =
+      { cusec : Microseconds.t
+      ; ctime : Kerberos_time.t
+      ; nonce : Uint32.t
+      ; pa_checksum : Octet_string.t option
+      }
+    
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t =
+              Microseconds.Ast.t
+            * Kerberos_time.Ast.t
+            * Uint32.Ast.t
+            * Octet_string.Ast.t option
+  end
+
+  (** Msg component.  Krb5 Principal Name.
+      @see <https://tools.ietf.org/html/rfc4556> RFC
+      @see <https://tools.ietf.org/html/rfc4556#section-3.2.2> Section Receipt of Client Request
+  *)
+  module Krb5_principal_name : sig
+    type t =
+      { realm : Realm.t
+      ; principal_name : Principal_name.t
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Realm.Ast.t * Principal_name.Ast.t
+  end
+
+  (** Msg component.  Krb5 Principal Name.
+      @see <https://tools.ietf.org/html/rfc4556> RFC
+      @see <https://tools.ietf.org/html/rfc4556#section-3.2.2> Section Receipt of Client Request
+  *)
+  module Dh_rep_info : sig
+    type t =
+      { dh_signed_data : Octet_string.t
+      ; server_dh_nonce : Octet_string.t option
+      }
+    include Asn1_intf.S with
+          type t := t
+      and type Ast.t = Octet_string.Ast.t * Octet_string.Ast.t option
   end
 
   module Types : sig

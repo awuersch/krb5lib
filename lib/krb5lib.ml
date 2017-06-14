@@ -57,7 +57,11 @@ module Msg = struct
 
   module Encryption_type = Encryption_type
 
+  module External_principal_identifier = External_principal_identifier
+
   module Checksum_type = Checksum_type
+
+  module Dh_rep_info = Dh_rep_info
 
   module Checksum = Checksum
 
@@ -107,17 +111,23 @@ module Msg = struct
 
   module Krb_safe = Krb_safe
 
+  module Krb5_principal_name = Krb5_principal_name
+
   module Last_req = Last_req
 
   module Method_data = Method_data
 
   module Name_type = Name_type
 
-  module Pa_enc_ts_enc = Pa_enc_ts_enc
-
   module Pa_data_type = Pa_data_type
 
   module Pa_data = Pa_data
+
+  module Pa_enc_ts_enc = Pa_enc_ts_enc
+
+  module Pa_pk_as_req = Pa_pk_as_req
+
+  module Pk_authenticator = Pk_authenticator
 
   module Principal_name = Principal_name
 

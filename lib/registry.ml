@@ -18,6 +18,10 @@ let us_govt   = base 2 16 <| 840 <| 1 <| 101
 let nist_alg  = us_govt <| 3 <| 4
 let hash_algs = nist_alg <| 2
 
+let krb5         = base 1 3 <| 6 <| 1 <| 5 <| 2
+let krb5_modules = krb5 <| 4
+let krb5_spec2   = krb5_modules <| 2
+
 (* PKCS1 *)
 
 let md2  = rsadsi <| 2 <| 2
@@ -263,4 +267,16 @@ module Name_extn = struct
 
   let is_utf8_id oid =
     List.mem oid [ xmpp_addr ; venezuela_1 ; venezuela_2 ]
+end
+
+module Pkinit = struct
+  let pkinit_spec = krb5_modules <| 5
+  let pkinit_san  = krb5 <| 2
+  let pkinit      = krb5 <| 3
+
+  let pkinit_authdata     = pkinit <| 1
+  let pkinit_dhkeydata    = pkinit <| 2
+  let pkinit_rkeydata     = pkinit <| 3
+  let pkinit_kpclientauth = pkinit <| 4
+  let pkinit_kpkdc        = pkinit <| 5
 end
